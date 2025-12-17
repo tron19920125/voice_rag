@@ -547,3 +547,105 @@ if __name__ == "__main__":
                  "竞品客户" if company.get('competitor_product') else "潜在客户"
         print(f"{i}. {company['name']:<15} | {company['industry']:<10} | {status}")
     print("=" * 60)
+
+
+# ========== 企业图谱向量化转换（用于 RAG 检索）==========
+
+def company_to_documents(company: Dict) -> List[Dict]:
+    """
+    将企业图谱转为多个可检索的文档
+
+    根据实验2设计，将企业信息拆分为 4 类文档：
+    1. 企业基本信息（profile）
+    2. 企业关系（relations）
+    3. 合作历史（projects）
+    4. 业务痛点（pain_points）
+
+    Args:
+        company: 企业字典
+
+    Returns:
+        文档列表，每个文档包含 id, type, title, content
+    """
+    docs = []
+
+    # 文档 1：企业基本信息
+    docs.append({
+        "id": f"{company['id']}_basic",
+        "type": "company_profile",
+        "title": f"{company['name']} 企业档案",
+        "content": f"""【企业名称】{company['name']}
+【行业】{company['industry']}
+【成立时间】{company['founded_date']}
+【注册资本】{company['capital']}
+【员工规模】{company['employees']}人
+【CEO】{company['ceo']}
+【经营范围】{company['business_scope']}"""
+    })
+
+    # 文档 2：企业关系
+    parent = company.get('parent_company', '无')
+    subsidiaries = '、'.join(company.get('subsidiaries', []))
+    investors = '、'.join(company.get('investors', []))
+
+    docs.append({
+        "id": f"{company['id']}_relations",
+        "type": "company_relations",
+        "title": f"{company['name']} 企业关系",
+        "content": f"""【企业名称】{company['name']}
+【母公司】{parent}
+【子公司】{subsidiaries if subsidiaries else '无'}
+【投资方】{investors if investors else '无'}"""
+    })
+
+    # 文档 3：合作历史
+    if company.get('past_projects'):
+        for idx, project in enumerate(company['past_projects']):
+            docs.append({
+                "id": f"{company['id']}_project_{idx}",
+                "type": "project_history",
+                "title": f"{company['name']} 合作案例（{project['year']}）",
+                "content": f"""【客户】{company['name']}
+【项目】{project['project']}
+【时间】{project['year']}年
+【合作方】{project['partner']}
+【使用产品】{project['product']}
+【项目成果】{project['result']}
+【投资金额】{project.get('investment', '未披露')}
+【项目周期】{project.get('duration', '未披露')}"""
+            })
+
+    # 文档 4：痛点分析
+    pain_points_text = '\n'.join(f"- {pain}" for pain in company.get('pain_points', []))
+    competitor_note = ""
+    if company.get('competitor_product'):
+        competitor_note = f"\n【注意】该企业目前使用竞品：{company['competitor_product']}"
+
+    docs.append({
+        "id": f"{company['id']}_painpoints",
+        "type": "company_needs",
+        "title": f"{company['name']} 业务痛点",
+        "content": f"""【企业名称】{company['name']}
+【行业】{company['industry']}
+【当前痛点】
+{pain_points_text}{competitor_note}"""
+    })
+
+    return docs
+
+
+def convert_all_companies_to_documents() -> List[Dict]:
+    """
+    将所有企业图谱转为文档列表
+
+    Returns:
+        所有企业的文档列表
+    """
+    all_docs = []
+    for company in COMPANY_GRAPH:
+        docs = company_to_documents(company)
+        all_docs.extend(docs)
+
+    print(f"✓ 企业图谱转换完成: {len(COMPANY_GRAPH)} 家企业 → {len(all_docs)} 个文档")
+    return all_docs
+
