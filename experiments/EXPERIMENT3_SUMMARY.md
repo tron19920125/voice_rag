@@ -1,0 +1,320 @@
+# 实验3准备完成总结
+
+**完成时间**: 2025-12-20
+**状态**: ✅ 所有准备工作已完成，可以开始运行实验
+
+---
+
+## 📦 已完成的工作
+
+### 1. 设计文档 ✅
+
+- **位置**: [docs/3. EXPERIMENT3_LONG_AUDIO_DESIGN.md](../docs/3.%20EXPERIMENT3_LONG_AUDIO_DESIGN.md)
+- **内容**:
+  - 完整的问题分析和解决方案设计
+  - 两种方案对比（渐进式 vs 完整总结）
+  - 技术实现细节
+  - 评估指标和预期结果
+  - 优化方向
+
+### 2. 测试用例数据 ✅
+
+- **位置**: [experiments/long_audio_test_cases.json](long_audio_test_cases.json)
+- **内容**: 10个精心设计的测试场景
+  - 复杂产品咨询
+  - 多问题技术咨询
+  - 冗余信息过滤
+  - 客户背景查询
+  - 产品推荐
+  - 竞品客户识别
+  - 详细需求描述
+  - 多企业对比
+  - 模糊咨询
+  - 紧急需求咨询
+
+### 3. 核心代码实现 ✅
+
+#### 3.1 长语音模拟器
+- **位置**: [experiments/long_audio_simulator.py](long_audio_simulator.py)
+- **功能**:
+  - 模拟流式输入
+  - VAD完成检测
+  - 句子切分
+  - 流式处理器
+
+#### 3.2 RAG处理流程
+- **位置**: [experiments/long_audio_rag_pipeline.py](long_audio_rag_pipeline.py)
+- **功能**:
+  - 结构化信息提取（LLM）
+  - 多查询分解
+  - 单/多查询RAG检索
+  - 混合检索（Vector + BM25）
+  - Reranking
+  - 响应生成
+
+#### 3.3 主测试脚本
+- **位置**: [experiments/test_03_long_audio_rag.py](test_03_long_audio_rag.py)
+- **功能**:
+  - Baseline（直接RAG）
+  - Pipeline（分段总结+RAG）
+  - 完整的评估体系
+  - 自动生成JSON结果和Markdown报告
+
+### 4. 使用文档 ✅
+
+- **README**: [experiments/EXPERIMENT3_README.md](EXPERIMENT3_README.md)
+- **快速运行脚本**: [run_experiment3.sh](../run_experiment3.sh)
+
+---
+
+## 🚀 如何开始运行
+
+### 方法1: 使用快速脚本（推荐）
+
+```bash
+cd ~/tts
+bash run_experiment3.sh
+```
+
+### 方法2: 手动运行
+
+```bash
+cd ~/tts
+
+# 1. 确保vLLM已启动
+curl http://localhost:8000/v1/models
+
+# 2. 运行实验
+uv run python experiments/test_03_long_audio_rag.py
+
+# 3. 查看结果
+ls -lh outputs/experiment3_long_audio_*
+```
+
+### 方法3: 在服务器上运行
+
+```bash
+# 1. 上传代码
+rsync -avz /local/tts/ azure-a100:~/tts/
+
+# 2. SSH到服务器并运行
+ssh azure-a100 "cd ~/tts && bash scripts/start_local_services.sh"
+ssh azure-a100 "cd ~/tts && source ~/miniconda3/bin/activate && python3 experiments/test_03_long_audio_rag.py"
+
+# 3. 下载结果
+rsync -avz azure-a100:~/tts/outputs/experiment3_long_audio_* ./outputs/
+```
+
+---
+
+## 📊 实验流程
+
+```
+用户长语音输入 (200-240字)
+         ↓
+┌────────────────────────────────────────┐
+│       方法1: Baseline (直接RAG)          │
+├────────────────────────────────────────┤
+│  1. 直接使用长文本作为query              │
+│  2. Vector + BM25 混合检索              │
+│  3. Rerank                             │
+│  4. LLM生成回复                         │
+└────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────┐
+│    方法2: Pipeline (分段总结+RAG)        │
+├────────────────────────────────────────┤
+│  1. LLM结构化提取                       │
+│     - 主要意图                          │
+│     - 关键点                            │
+│     - 实体和约束                        │
+│     - 简化query                        │
+│  2. 判断是否多问题                      │
+│     - 是: 分解为多个子query             │
+│     - 否: 使用简化query                │
+│  3. RAG检索 (Vector+BM25+Rerank)       │
+│  4. LLM生成回复（带完整上下文）          │
+└────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────┐
+│            评估对比                      │
+├────────────────────────────────────────┤
+│  - 信息保留率                           │
+│  - RAG召回率                            │
+│  - RAG精确率                            │
+│  - 回复质量（LLM评分）                   │
+│  - 处理延迟                             │
+└────────────────────────────────────────┘
+```
+
+---
+
+## 📈 关键创新点
+
+### 1. 结构化信息提取
+使用LLM将长文本转换为结构化信息：
+```json
+{
+  "main_intent": "产品咨询",
+  "key_points": ["查询案例", "预算50万", "3个月交付"],
+  "entities": ["中国银行", "供应链金融"],
+  "constraints": ["预算50万", "3个月"],
+  "concise_query": "查询中国银行供应链金融项目，预算50万..."
+}
+```
+
+### 2. 多查询分解
+对于包含多个问题的输入，自动分解为独立子查询：
+- 原始: "我想问几个问题，第一个是...第二个是..."
+- 分解: ["子查询1", "子查询2", "子查询3"]
+- 分别检索后合并去重
+
+### 3. 智能RAG策略
+- 单问题: 直接检索
+- 多问题: 分解检索后合并
+- 混合检索: Vector + BM25
+- 智能Reranking
+
+### 4. 完整评估体系
+- 对比Baseline vs Pipeline
+- 多维度评估（信息保留、检索精度、回复质量、延迟）
+- LLM自动评分
+
+---
+
+## 🎯 预期输出
+
+### JSON结果文件
+```json
+{
+  "test_case_id": "complex_product_inquiry",
+  "category": "复杂产品咨询",
+  "original_text": "...",
+  "baseline": {
+    "rag_results": [...],
+    "final_response": "...",
+    "timing_total": 1.5
+  },
+  "pipeline": {
+    "structured_query": {...},
+    "rag_results": [...],
+    "final_response": "...",
+    "timing_total": 2.5
+  },
+  "evaluation": {
+    "info_retention_rate": 0.95,
+    "baseline_rag_recall": 0.4,
+    "pipeline_rag_recall": 0.8,
+    "baseline_response_score": 6.5,
+    "pipeline_response_score": 8.5
+  }
+}
+```
+
+### Markdown报告
+- 整体结果对比表格
+- 分类别统计
+- 详细测试用例展示
+- 结论与优化建议
+
+---
+
+## ⚠️ 注意事项
+
+### 运行前检查
+1. ✅ vLLM服务已启动
+2. ✅ .env文件已配置（EMBEDDING_TOKEN, RERANK_TOKEN）
+3. ✅ 网络连接正常（访问Embedding/Rerank API）
+4. ✅ outputs目录有写权限
+
+### 预计运行时间
+- 10个测试用例
+- 每个用例运行2种方法（Baseline + Pipeline）
+- 每种方法包含: 检索(~0.5s) + 生成(~1s) + 评估(~1s)
+- **总计**: 约10-15分钟
+
+### 资源消耗
+- **GPU内存**: vLLM占用（~20GB for Qwen3-8B）
+- **系统内存**: 测试脚本（~2GB）
+- **API调用**:
+  - Embedding: ~60次（每个测试用例6次）
+  - Rerank: ~20次
+  - LLM: ~40次（结构化提取 + 生成 + 评估）
+
+---
+
+## 🔍 调试建议
+
+### 如果出现错误
+
+1. **vLLM连接失败**
+   ```bash
+   curl http://localhost:8000/v1/models
+   tail -f logs/vllm.log
+   ```
+
+2. **API调用失败**
+   - 检查token配置
+   - 测试API连接
+   - 查看网络日志
+
+3. **JSON解析错误**
+   - 检查LLM输出格式
+   - 查看具体错误信息
+   - 可能需要调整prompt
+
+### 单步调试
+
+```python
+# 测试单个组件
+from experiments.long_audio_rag_pipeline import LongAudioRAGPipeline
+
+# 初始化...
+pipeline = LongAudioRAGPipeline(...)
+
+# 测试提取
+result = pipeline.extract_structure("测试文本")
+print(result)
+
+# 测试检索
+docs = pipeline.single_query_retrieval("测试query")
+print(docs)
+```
+
+---
+
+## 📚 相关文档
+
+- [完整设计文档](../docs/3.%20EXPERIMENT3_LONG_AUDIO_DESIGN.md)
+- [使用说明](EXPERIMENT3_README.md)
+- [实验1报告](../docs/实验1-模型对比设计.md)
+- [实验2报告](../docs/实验2-RAG融合设计.md)
+
+---
+
+## ✅ 下一步
+
+1. **运行实验**
+   ```bash
+   bash run_experiment3.sh
+   ```
+
+2. **分析结果**
+   - 查看JSON文件了解详细数据
+   - 阅读Markdown报告了解整体趋势
+
+3. **迭代优化**
+   - 根据结果调整prompt
+   - 优化检索策略
+   - 尝试不同的总结方法
+
+4. **扩展实验**
+   - 测试更多模型（14B, 32B）
+   - 尝试渐进式总结
+   - 对比不同的提取策略
+
+---
+
+**准备完成时间**: 2025-12-20
+**作者**: Haoquan + Claude Sonnet 4.5
+**状态**: ✅ Ready to Run

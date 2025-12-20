@@ -1,157 +1,252 @@
-# Experiment 3: 本地模型部署性能对比
+# 实验3：长时间语音输入的分段总结与RAG处理
 
-## 目标
+## 📋 实验概述
 
-在真实服务器环境（Azure V100）上部署本地 LLM，并与云端 API 进行性能对比。
+本实验旨在解决**用户长时间语音输入后如何更准确回复**的问题，通过**分段总结 + 结构化提取 + RAG检索**的方式，提升长文本查询的处理效果。
 
-## 实验配置
+### 核心问题
 
-### 本地部署
-- **硬件**: Azure VM with 2x Tesla V100-PCIE-16GB (16GB VRAM each)
-- **推理引擎**: vLLM 0.11.0
-- **模型**: Qwen/Qwen3-8B
-- **并行方式**: Tensor Parallelism (2 GPUs)
-- **Attention Backend**: TORCH_SDPA (PyTorch native, V100 compatible)
-- **思考模式**: 禁用 (`chat_template_kwargs: {enable_thinking: false}`)
+在实际语音交互中，用户可能进行2-5分钟的长语音输入，导致：
+- 转文本后有500-2000字
+- 包含多个主题和意图
+- 直接RAG检索效果不佳（query过长）
+- 关键信息被淹没在细节中
 
-### 云端 API
-- **服务**: 通义千问 API
-- **模型**: qwen3-8b
-- **思考模式**: 禁用 (`extra_body: {enable_thinking: false}`)
+### 解决方案
 
-### Embedding & Reranking
-- **Embedding**: 云端 API (BAAI/bge-m3)
-- **Reranking**: 云端 API (BAAI/bge-reranker-v2-m3)
-- **原因**: vLLM 不支持 embedding 模型，本地部署需要额外推理引擎
+**方案对比：**
 
-## 关键技术挑战与解决方案
+| 方法 | 流程 | 优点 | 缺点 |
+|------|------|------|------|
+| **Baseline** | 长文本 → RAG检索 → 生成 | 简单快速 | 检索精度低 |
+| **Pipeline**（本实验） | 长文本 → 结构化提取 → 简化query → RAG → 生成 | 检索精度高、信息完整 | 延迟稍高 |
 
-### 1. V100 GPU 兼容性
-**问题**: V100 是 sm70 架构，不支持 FlashInfer 和 Flash Attention 2
-- FlashInfer: 需要 sm75+ (Turing/Ampere)
-- Flash Attention 2: 需要 sm80+ (Ampere)
+---
 
-**解决方案**:
-```bash
-export VLLM_ATTENTION_BACKEND=TORCH_SDPA
-export VLLM_USE_FLASHINFER_SAMPLER=0
+## 📁 文件结构
+
+```
+experiments/
+├── EXPERIMENT3_LONG_AUDIO_DESIGN.md      # 设计文档（已移至docs/）
+├── long_audio_test_cases.json            # 10个测试用例
+├── long_audio_simulator.py               # 长语音模拟器
+├── long_audio_rag_pipeline.py            # 核心处理流程
+└── test_03_long_audio_rag.py             # 主测试脚本
+
+docs/
+└── 3. EXPERIMENT3_LONG_AUDIO_DESIGN.md   # 完整设计文档
+
+outputs/
+├── experiment3_long_audio_results_*.json # 测试结果
+└── experiment3_long_audio_report_*.md    # 分析报告
 ```
 
-### 2. 显存 OOM (Out of Memory)
-**问题**: Qwen3-8B 单卡加载 ~15.3GB，超过 V100 16GB 限制
+---
 
-**解决方案**:
-```bash
---tensor-parallel-size 2  # 使用 2 张 GPU 做模型并行
---gpu-memory-utilization 0.90
---max-model-len 16384
---enforce-eager  # 禁用 torch.compile 减少内存
-```
+## 🚀 快速开始
 
-### 3. 思考模式 (Thinking Mode)
-**问题**: Qwen3-8B 默认输出 `<think>` 标签，增加延迟和 token 消耗
+### 前置条件
 
-**解决方案**:
-- 云端 API: `extra_body={"enable_thinking": False}`
-- 本地 vLLM: `extra_body={"chat_template_kwargs": {"enable_thinking": False}}`
-- vLLM 启动参数: `--reasoning-parser qwen3`
+1. **vLLM服务已启动**（本地或远程）
+   ```bash
+   # 本地启动（如果还没启动）
+   cd ~/tts
+   bash scripts/start_local_services.sh
 
-### 4. V1 引擎兼容性
-**问题**: vLLM 0.11.0 必须使用 V1 引擎，V0 已被移除
+   # 或者SSH到服务器
+   ssh azure-a100
+   cd ~/tts
+   bash scripts/start_local_services.sh
+   ```
 
-**解决方案**: 不设置 `VLLM_USE_V1=0`，使用默认的 V1 引擎
+2. **环境变量配置**
+   确保 `.env` 文件包含：
+   ```bash
+   EMBEDDING_TOKEN=your_token
+   EMBEDDING_URL=https://api.siliconflow.cn/v1/embeddings
+   EMBEDDING_MODEL=BAAI/bge-m3
+   RERANK_TOKEN=your_token
+   RERANK_URL=https://api.siliconflow.cn/v1/rerank
+   RERANK_MODEL=BAAI/bge-reranker-v2-m3
+   ```
 
-## 性能结果
+### 运行实验
 
-### 最终测试结果 (思考模式禁用后)
-
-| 指标 | 云端 API | 本地 vLLM (V100 x2) | 云端优势 |
-|------|---------|-------------------|---------|
-| **平均延迟** | 1.023s | 2.960s | 2.9x 更快 |
-| **平均 Tokens** | 81 | 77 | 本地更少 |
-| **首次推理** | 1.52s | 6.63s | 4.4x 更快 |
-| **后续推理** | 0.41-1.13s | 0.38-1.87s | 相近 |
-
-### 延迟分析
-
-**本地 vLLM 延迟组成**:
-1. 首次推理较慢 (6.63s) - KV cache 预热
-2. 后续推理快得多 (0.38-1.87s) - 缓存命中
-3. 平均延迟 2.96s
-
-**云端 API 延迟**:
-- 更稳定，1.0s 左右
-- 包含网络往返时间
-
-## 运行实验
-
-### 1. 启动本地 vLLM 服务 (在服务器上)
+#### 本地运行（vLLM在本机）
 
 ```bash
 cd ~/tts
-bash scripts/start_local_services.sh
+uv run python experiments/test_03_long_audio_rag.py
 ```
 
-### 2. 运行性能对比测试
+#### 远程运行（vLLM在服务器）
 
 ```bash
+# 1. 上传代码到服务器
+rsync -avz /local/tts/ azure-a100:~/tts/
+
+# 2. SSH到服务器
+ssh azure-a100
+
+# 3. 运行实验
 cd ~/tts
 source ~/miniconda3/bin/activate
-python3 experiments/test_03_simple.py
+python3 experiments/test_03_long_audio_rag.py
+
+# 4. 下载结果
+exit
+rsync -avz azure-a100:~/tts/outputs/experiment3_long_audio_* ./outputs/
 ```
 
-### 3. 查看结果
+---
 
-结果保存在 `outputs/experiment3_simple_*.json`
+## 📊 测试用例
 
-### 4. 停止服务
+本实验包含10个精心设计的测试用例，涵盖多种场景：
+
+| ID | 类别 | 文本长度 | 特点 |
+|----|------|---------|------|
+| `complex_product_inquiry` | 复杂产品咨询 | 218字 | 多个需求点、约束条件 |
+| `multi_question_technical` | 多问题技术咨询 | 180字 | 5个独立问题 |
+| `redundant_information` | 冗余信息过滤 | 150字 | 大量口语化表达 |
+| `customer_background_inquiry` | 客户背景查询 | 160字 | 需要查询历史案例 |
+| `product_recommendation_with_context` | 产品推荐 | 190字 | 详细痛点描述 |
+| `competitor_customer_inquiry` | 竞品客户识别 | 170字 | 多企业对比 |
+| `detailed_requirement_description` | 详细需求描述 | 240字 | 复杂业务场景 |
+| `comparison_inquiry` | 多企业对比查询 | 150字 | 3家企业对比 |
+| `vague_inquiry` | 模糊咨询 | 140字 | 需求不明确 |
+| `urgent_inquiry` | 紧急需求咨询 | 200字 | 时间压力 |
+
+---
+
+## 📈 评估指标
+
+实验会对比两种方法（Baseline vs Pipeline）的以下指标：
+
+| 指标 | 说明 | 权重 |
+|------|------|------|
+| **信息保留率** | 关键信息是否被提取 | 30% |
+| **RAG召回率** | 是否召回正确文档 | 25% |
+| **RAG精确率** | 返回文档的相关性 | 25% |
+| **回复质量** | LLM评分（1-10分） | 20% |
+
+---
+
+## 🎯 预期结果
+
+根据设计文档，预期改进如下：
+
+| 指标 | Baseline | Pipeline | 改进 |
+|------|---------|----------|------|
+| 信息保留率 | 60% | **90%** | +30% |
+| RAG召回率 | 40% | **75%** | +35% |
+| 回复质量 | 6.5/10 | **8.5/10** | +2分 |
+| 处理延迟 | 1.5s | **2.5s** | +1s |
+
+---
+
+## 📝 结果分析
+
+运行完成后，会生成两个文件：
+
+1. **JSON结果** (`experiment3_long_audio_results_*.json`)
+   - 每个测试用例的详细数据
+   - Baseline vs Pipeline的对比
+   - 时间统计、评分详情
+
+2. **Markdown报告** (`experiment3_long_audio_report_*.md`)
+   - 整体统计对比
+   - 分类别结果分析
+   - 详细测试用例展示
+   - 结论与优化建议
+
+---
+
+## 🔧 调试与测试
+
+### 单独测试组件
+
+#### 1. 测试长语音模拟器
 
 ```bash
-cd ~/tts
-bash scripts/stop_local_services.sh
+uv run python experiments/long_audio_simulator.py
 ```
 
-## 成本与性能权衡
+#### 2. 测试Pipeline（单个case）
 
-### 本地部署优势
-✅ **数据隐私**: 敏感数据不离开服务器
-✅ **成本可控**: 大规模使用时成本更低
-✅ **无网络依赖**: 内网环境可用
-✅ **可定制**: 可以调整参数优化性能
+```python
+from experiments.long_audio_rag_pipeline import LongAudioRAGPipeline
+from openai import OpenAI
 
-### 本地部署劣势
-❌ **初始成本高**: 需要 GPU 服务器投入
-❌ **延迟较高**: V100 性能不如新一代 GPU
-❌ **运维复杂**: 需要管理服务和模型更新
-❌ **首次推理慢**: KV cache 预热需要时间
+llm = OpenAI(api_key="EMPTY", base_url="http://localhost:8000/v1")
+# ... 初始化其他组件
 
-### 云端 API 优势
-✅ **延迟低**: 专用优化的推理集群
-✅ **零运维**: 无需管理基础设施
-✅ **按需付费**: 灵活的成本结构
-✅ **持续优化**: 自动获得性能改进
+pipeline = LongAudioRAGPipeline(llm, vector_index, ...)
+result = pipeline.process("你的测试文本...")
+print(result)
+```
 
-### 云端 API 劣势
-❌ **数据隐私**: 需要传输数据到云端
-❌ **成本不可控**: 大规模使用成本高
-❌ **网络依赖**: 需要稳定的互联网连接
-❌ **定制受限**: 无法修改底层配置
+### 常见问题
 
-## 结论
+1. **vLLM连接失败**
+   ```bash
+   # 检查服务状态
+   curl http://localhost:8000/v1/models
 
-1. **本地部署可行**: 在 V100 上成功部署 Qwen3-8B，延迟约 3s
-2. **云端更快**: 云端 API 延迟约 1s，比本地快 2.9x
-3. **V100 限制**: 老一代 GPU 性能受限，新 GPU (A100/H100) 会有更好表现
-4. **思考模式**: 必须禁用才能获得合理性能
-5. **选择建议**:
-   - **原型阶段**: 推荐云端 API（快速迭代）
-   - **生产阶段（大规模）**: 考虑本地部署（成本优势）
-   - **隐私敏感**: 必须本地部署
-   - **性能优先**: 云端 API 或升级到新 GPU
+   # 查看日志
+   tail -f logs/vllm.log
+   ```
 
-## 文件说明
+2. **Embedding API超时**
+   - 检查 `.env` 中的token是否正确
+   - 测试API连接：
+     ```bash
+     curl -X POST "$EMBEDDING_URL" \
+       -H "Authorization: Bearer $EMBEDDING_TOKEN" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"BAAI/bge-m3","input":["测试"]}'
+     ```
 
-- `test_03_simple.py`: 性能对比测试脚本
-- `scripts/start_local_services.sh`: vLLM 启动脚本
-- `scripts/stop_local_services.sh`: vLLM 停止脚本
-- `outputs/experiment3_simple_*.json`: 测试结果
+3. **JSON解析失败**
+   - LLM返回的JSON可能包含markdown标记
+   - 代码中已做处理，但如果仍失败，检查LLM输出格式
+
+---
+
+## 🎓 扩展实验
+
+### 实验变体
+
+1. **渐进式总结**（实时场景）
+   - 边听边总结
+   - 适合实时交互
+
+2. **多模型对比**
+   - 测试不同LLM的提取效果
+   - Qwen3-8B vs 14B vs 32B
+
+3. **不同总结策略**
+   - 简单摘要 vs 结构化提取 vs 多query分解
+   - 评估哪种策略最优
+
+---
+
+## 📚 参考文档
+
+- [设计文档](../docs/3.%20EXPERIMENT3_LONG_AUDIO_DESIGN.md) - 完整的方案设计
+- [实验1报告](../docs/实验1-模型对比设计.md) - 模型对比基准
+- [实验2报告](../docs/实验2-RAG融合设计.md) - RAG优化方案
+
+---
+
+## 🤝 贡献
+
+如果你有改进建议或发现问题，欢迎：
+1. 修改测试用例（`long_audio_test_cases.json`）
+2. 优化Prompt模板（`long_audio_rag_pipeline.py`）
+3. 添加新的评估指标
+
+---
+
+**实验设计**: 2025-12-20
+**作者**: Haoquan + Claude Sonnet 4.5
