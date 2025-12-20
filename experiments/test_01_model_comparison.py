@@ -1,8 +1,15 @@
 """
-实验1：模型对比实验
-测试 qwen3-8b, qwen3-32b, qwen3-72b 在有/无 RAG 支持下的表现
+实验1：模型对比实验 (使用本地 vLLM 部署)
+测试本地 vLLM 部署的 Qwen3-8B, 14B 在有/无 RAG 支持下的表现
 
-测试矩阵：6 场景 × 3 模型 × 2 模式 = 36 次测试
+测试矩阵：6 场景 × 2 模型 × 2 模式 = 24 次测试
+
+配置：
+- LLM: 本地 vLLM (Qwen3-8B/14B) at localhost:8000 (单卡)
+- Embedding: 云端 API (BAAI/bge-m3)
+- Reranking: 云端 API (BAAI/bge-reranker-v2-m3)
+
+注：32B 需要双卡并行，将在单独实验中测试
 """
 
 import os
@@ -32,17 +39,16 @@ from data.fictional_knowledge_base import FICTIONAL_DOCUMENTS, TEST_SCENARIOS
 # 加载环境变量
 load_dotenv()
 
-# 模型配置
+# 模型配置 - 使用本地 vLLM (Qwen3-8B, 14B)
+# 注：测试 8B 和 14B 单卡部署性能
 MODELS = [
-    "qwen3-8b",      # 8b 模型
-    "qwen3-14b",     # 14b 模型
-    "qwen3-32b"      # 32b 模型
+    "Qwen/Qwen3-8B",   # 8B 模型 (~20GB 显存)
+    "Qwen/Qwen3-14B",  # 14B 模型 (~35GB 显存)
 ]
 
 MODEL_NAMES = {
-    "qwen3-8b": "qwen3-8b",
-    "qwen3-14b": "qwen3-14b",
-    "qwen3-32b": "qwen3-32b"
+    "Qwen/Qwen3-8B": "qwen3-8b-local",
+    "Qwen/Qwen3-14B": "qwen3-14b-local",
 }
 
 # 系统提示词
@@ -71,12 +77,13 @@ class Experiment1Runner:
         """初始化实验运行器"""
         print("[DEBUG] 1. 开始初始化实验运行器...", flush=True)
 
-        print("[DEBUG] 2. 创建 OpenAI 客户端...", flush=True)
+        print("[DEBUG] 2. 创建 OpenAI 客户端（本地 vLLM）...", flush=True)
+        # 使用本地 vLLM 服务
         self.client = OpenAI(
-            api_key=os.getenv("QWEN_TOKEN"),
-            base_url=os.getenv("QWEN_API_BASE")
+            api_key="EMPTY",
+            base_url="http://localhost:8000/v1"
         )
-        print("[DEBUG] 3. OpenAI 客户端创建成功", flush=True)
+        print("[DEBUG] 3. OpenAI 客户端创建成功（本地 vLLM）", flush=True)
 
         # 初始化 RAG 组件
         print("[DEBUG] 4. 初始化 Embedding 服务...", flush=True)
@@ -136,7 +143,7 @@ class Experiment1Runner:
                 max_tokens=2000,
                 temperature=0.7,
                 stream=True,
-                extra_body={"enable_thinking": False}
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}}
             )
 
             for chunk in stream:
@@ -352,12 +359,12 @@ class Experiment1Runner:
 
         return scores
 
-    def run_all_tests(self, max_workers: int = 5):
+    def run_all_tests(self, max_workers: int = 3):
         """
         运行所有测试（并发版本）
 
         Args:
-            max_workers: 最大并发数（默认5）
+            max_workers: 最大并发数（默认3）
         """
         total_tests = len(TEST_SCENARIOS) * len(MODELS) * 2
 
@@ -544,7 +551,7 @@ class Experiment1Runner:
                 max_tokens=2000,
                 temperature=0.7,
                 stream=True,
-                extra_body={"enable_thinking": False}
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}}
             )
 
             for chunk in stream:
@@ -746,7 +753,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='实验1：模型对比实验')
-    parser.add_argument('--workers', type=int, default=5, help='并发数（默认5）')
+    parser.add_argument('--workers', type=int, default=3, help='并发数（默认3）')
     args = parser.parse_args()
 
     print("[DEBUG] ========== 实验开始 ==========", flush=True)

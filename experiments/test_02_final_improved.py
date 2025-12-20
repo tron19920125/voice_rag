@@ -1,10 +1,16 @@
 """
-实验2最终改进版：运行完整测试套件（应用所有优化）
+实验2最终改进版：运行完整测试套件（应用所有优化，使用本地 vLLM）
 
 改进措施：
 1. 新增金融行业产品文档
 2. 自定义 jieba 词典
 3. 宽松评分标准（60%通过线）
+4. 使用本地 vLLM 部署（Qwen3-8B）
+
+配置：
+- LLM: 本地 vLLM (Qwen3-8B) at localhost:8000
+- Embedding: 云端 API (BAAI/bge-m3)
+- Reranking: 云端 API (BAAI/bge-reranker-v2-m3)
 """
 
 import os
@@ -34,7 +40,8 @@ from data.test_cases_exp2 import TEST_CASES, calculate_key_points_coverage
 
 load_dotenv()
 
-MODEL = "qwen3-8b"
+# 使用本地 vLLM 部署
+MODEL = "Qwen/Qwen3-8B"
 SYSTEM_PROMPT = """你是 TechFlow Industrial Solutions 公司的专业销售顾问。基于提供的信息准确推荐产品和解决方案。
 
 重要原则：
@@ -213,12 +220,13 @@ class ImprovedExperiment2:
 
     def __init__(self):
         print("\n" + "="*70)
-        print("实验2改进版：完整测试套件（应用所有优化）")
+        print("实验2改进版：完整测试套件（应用所有优化，使用本地 vLLM）")
         print("="*70 + "\n")
 
+        # 使用本地 vLLM 服务
         self.client = OpenAI(
-            api_key=os.getenv("QWEN_TOKEN"),
-            base_url=os.getenv("QWEN_API_BASE")
+            api_key="EMPTY",
+            base_url="http://localhost:8000/v1"
         )
 
         # 初始化组件
@@ -287,7 +295,7 @@ class ImprovedExperiment2:
             ],
             temperature=0.1,
             max_tokens=1000,
-            extra_body={"enable_thinking": False}
+            extra_body={"chat_template_kwargs": {"enable_thinking": False}}
         )
         answer = response.choices[0].message.content
         generation_time = time.perf_counter() - generation_start
@@ -394,14 +402,16 @@ class ImprovedExperiment2:
 
         output = {
             "experiment_info": {
-                "experiment_name": "实验2改进版：应用所有优化措施",
+                "experiment_name": "实验2改进版：应用所有优化措施（本地 vLLM 部署）",
                 "timestamp": self.experiment_timestamp,
                 "model": MODEL,
+                "deployment": "本地 vLLM (localhost:8000)",
                 "total_documents": len(self.all_docs),
                 "improvements": [
                     "新增金融行业产品文档",
                     "自定义 jieba 词典（企业名称+产品+术语）",
-                    "宽松评分标准（60%通过线）"
+                    "宽松评分标准（60%通过线）",
+                    "使用本地 vLLM 部署（Qwen3-8B）"
                 ]
             },
             "test_results": results
