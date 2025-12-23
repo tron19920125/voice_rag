@@ -130,7 +130,9 @@ class IncrementalSummarizer:
         response = self.llm.chat.completions.create(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+            temperature=0.1,
+            stream=False,
+            extra_body={"enable_thinking": False}
         )
 
         content = self._clean_json_response(response.choices[0].message.content)
@@ -158,7 +160,9 @@ class IncrementalSummarizer:
         response = self.llm.chat.completions.create(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+            temperature=0.1,
+            stream=False,
+            extra_body={"enable_thinking": False}
         )
 
         content = self._clean_json_response(response.choices[0].message.content)
@@ -196,7 +200,9 @@ class IncrementalSummarizer:
         response = self.llm.chat.completions.create(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+            temperature=0.1,
+            stream=False,
+            extra_body={"enable_thinking": False}
         )
 
         content = self._clean_json_response(response.choices[0].message.content)

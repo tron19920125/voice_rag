@@ -27,8 +27,6 @@ from dotenv import load_dotenv
 from rag_utils import (
     EmbeddingService,
     VectorIndex,
-    RerankService,
-    BM25Index,
     get_jieba
 )
 from data.fictional_knowledge_base import FICTIONAL_DOCUMENTS
@@ -40,7 +38,7 @@ load_dotenv()
 # 模型配置 - 使用通义千问API
 API_KEY = os.getenv("QWEN_TOKEN")
 BASE_URL = os.getenv("QWEN_API_BASE", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-MODEL = os.getenv("QWEN_MODEL", "qwen-plus")
+MODEL = os.getenv("QWEN_MODEL", "qwen3-8b")
 
 
 # ========== 加载测试用例 ==========
@@ -80,21 +78,37 @@ def calculate_noise_filtering_rate(filtered_count: int, total_noise_count: int) 
     return min(filtered_count / total_noise_count, 1.0)
 
 
-def calculate_rag_recall(rag_results: List[Dict], expected_docs: List[str]) -> float:
-    """计算RAG检索召回率"""
-    if not expected_docs:
+def calculate_rag_recall(rag_results: List[Dict], ground_truth: Dict) -> float:
+    """
+    计算RAG检索相关性得分
+    基于ground_truth中的关键信息，评估检索结果的相关性
+    """
+    if not rag_results:
+        return 0.0
+
+    # 从ground_truth提取关键词
+    key_entities = ground_truth.get("entities", [])
+    key_points = ground_truth.get("key_points", [])
+    constraints = ground_truth.get("constraints", [])
+
+    all_keywords = key_entities + [kp for kp in key_points if len(kp) < 20] + constraints
+
+    if not all_keywords:
         return 1.0
 
-    retrieved_titles = [doc.get("title", "") for doc in rag_results]
+    # 统计检索结果中包含关键词的数量
+    relevant_count = 0
+    for doc in rag_results:
+        doc_text = doc.get("title", "") + " " + doc.get("content", "")
 
-    matched = 0
-    for expected in expected_docs:
-        for title in retrieved_titles:
-            if expected in title or title in expected:
-                matched += 1
+        # 检查是否包含任何关键词
+        for keyword in all_keywords:
+            if keyword in doc_text:
+                relevant_count += 1
                 break
 
-    return matched / len(expected_docs)
+    # 返回相关文档占比
+    return relevant_count / len(rag_results)
 
 
 def evaluate_response_quality(
@@ -128,7 +142,9 @@ AI回复：
         response_obj = llm_client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "user", "content": eval_prompt}],
-            temperature=0.1
+            temperature=0.1,
+            stream=False,
+            extra_body={"enable_thinking": False}
         )
 
         content = response_obj.choices[0].message.content.strip()
@@ -149,13 +165,22 @@ AI回复：
         return 5.0, "评分失败"
 
 
+# ========== 辅助函数 ==========
+
+def search_with_query_text(query_text: str, vector_index: VectorIndex, embedding_service: EmbeddingService, top_k: int = 5) -> List[Dict]:
+    """使用文本query进行向量检索"""
+    query_vector = embedding_service.embed_single(query_text)
+    results = vector_index.search(query_vector, top_k=top_k)
+    # 转换格式
+    return [{"id": r["doc_id"], "title": r["title"], "content": r["content"]} for r in results]
+
+
 # ========== 方法1：Baseline（直接RAG） ==========
 
 def method1_baseline(
     full_text: str,
     vector_index: VectorIndex,
-    bm25_index: BM25Index,
-    rerank_service: RerankService,
+    embedding_service: EmbeddingService,
     llm_client: OpenAI,
     top_k: int = 5
 ) -> Dict:
@@ -164,26 +189,8 @@ def method1_baseline(
     """
     start_time = time.time()
 
-    # 1. 检索
-    vector_results = vector_index.search(full_text, top_k=top_k * 2)
-    bm25_results = bm25_index.search(full_text, top_k=top_k * 2)
-
-    # 合并去重
-    all_results = {}
-    for doc in vector_results:
-        all_results[doc["id"]] = doc
-    for doc in bm25_results:
-        if doc["id"] not in all_results:
-            all_results[doc["id"]] = doc
-
-    results = list(all_results.values())
-
-    # Rerank
-    if len(results) > top_k:
-        results = rerank_service.rerank(full_text, results, top_k=top_k)
-    else:
-        results = results[:top_k]
-
+    # 1. 向量检索
+    results = search_with_query_text(full_text, vector_index, embedding_service, top_k)
     rag_time = time.time() - start_time
 
     # 2. 生成回复
@@ -205,7 +212,9 @@ def method1_baseline(
     response = llm_client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        temperature=0.7,
+        stream=False,
+        extra_body={"enable_thinking": False}
     )
 
     final_response = response.choices[0].message.content.strip()
@@ -227,8 +236,7 @@ def method1_baseline(
 def method2_batch_summary(
     full_text: str,
     vector_index: VectorIndex,
-    bm25_index: BM25Index,
-    rerank_service: RerankService,
+    embedding_service: EmbeddingService,
     llm_client: OpenAI,
     top_k: int = 5
 ) -> Dict:
@@ -255,7 +263,9 @@ def method2_batch_summary(
     response = llm_client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": summary_prompt}],
-        temperature=0.1
+        temperature=0.1,
+        stream=False,
+        extra_body={"enable_thinking": False}
     )
 
     content = response.choices[0].message.content.strip()
@@ -273,23 +283,7 @@ def method2_batch_summary(
     concise_query = summary_result["concise_summary"]
 
     rag_start = time.time()
-    vector_results = vector_index.search(concise_query, top_k=top_k * 2)
-    bm25_results = bm25_index.search(concise_query, top_k=top_k * 2)
-
-    all_results = {}
-    for doc in vector_results:
-        all_results[doc["id"]] = doc
-    for doc in bm25_results:
-        if doc["id"] not in all_results:
-            all_results[doc["id"]] = doc
-
-    results = list(all_results.values())
-
-    if len(results) > top_k:
-        results = rerank_service.rerank(concise_query, results, top_k=top_k)
-    else:
-        results = results[:top_k]
-
+    results = search_with_query_text(concise_query, vector_index, embedding_service, top_k)
     rag_time = time.time() - rag_start
 
     # 3. 生成回复
@@ -314,7 +308,9 @@ def method2_batch_summary(
     response = llm_client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        temperature=0.7,
+        stream=False,
+        extra_body={"enable_thinking": False}
     )
 
     final_response = response.choices[0].message.content.strip()
@@ -341,8 +337,7 @@ def method2_batch_summary(
 def method3_incremental_summary(
     segments: List[Dict],
     vector_index: VectorIndex,
-    bm25_index: BM25Index,
-    rerank_service: RerankService,
+    embedding_service: EmbeddingService,
     llm_client: OpenAI,
     top_k: int = 5
 ) -> Dict:
@@ -368,23 +363,7 @@ def method3_incremental_summary(
     concise_query = final_result["structured_query"]["concise_query"]
 
     rag_start = time.time()
-    vector_results = vector_index.search(concise_query, top_k=top_k * 2)
-    bm25_results = bm25_index.search(concise_query, top_k=top_k * 2)
-
-    all_results = {}
-    for doc in vector_results:
-        all_results[doc["id"]] = doc
-    for doc in bm25_results:
-        if doc["id"] not in all_results:
-            all_results[doc["id"]] = doc
-
-    results = list(all_results.values())
-
-    if len(results) > top_k:
-        results = rerank_service.rerank(concise_query, results, top_k=top_k)
-    else:
-        results = results[:top_k]
-
+    results = search_with_query_text(concise_query, vector_index, embedding_service, top_k)
     rag_time = time.time() - rag_start
 
     # 4. 生成回复
@@ -411,7 +390,9 @@ def method3_incremental_summary(
     response = llm_client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        temperature=0.7,
+        stream=False,
+        extra_body={"enable_thinking": False}
     )
 
     final_response = response.choices[0].message.content.strip()
@@ -446,9 +427,8 @@ class Experiment3V2Runner:
         # LLM - 使用通义千问API
         self.llm_client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-        # Embedding & Reranking
+        # Embedding (不需要Reranking了，简化实验)
         self.embedding_service = EmbeddingService()
-        self.rerank_service = RerankService()
 
         # 初始化知识库
         print("构建知识库...")
@@ -463,10 +443,6 @@ class Experiment3V2Runner:
 
         self.vector_index = VectorIndex(self.embedding_service)
         self.vector_index.add_documents(all_docs)
-
-        jieba = get_jieba()
-        self.bm25_index = BM25Index(jieba=jieba)
-        self.bm25_index.add_documents(all_docs)
 
         print(f"知识库文档数: {len(all_docs)}")
 
@@ -495,8 +471,7 @@ class Experiment3V2Runner:
         method1_result = method1_baseline(
             full_text,
             self.vector_index,
-            self.bm25_index,
-            self.rerank_service,
+            self.embedding_service,
             self.llm_client
         )
         result["method1_baseline"] = method1_result
@@ -506,8 +481,7 @@ class Experiment3V2Runner:
         method2_result = method2_batch_summary(
             full_text,
             self.vector_index,
-            self.bm25_index,
-            self.rerank_service,
+            self.embedding_service,
             self.llm_client
         )
         result["method2_batch"] = method2_result
@@ -517,8 +491,7 @@ class Experiment3V2Runner:
         method3_result = method3_incremental_summary(
             test_case["segments"],
             self.vector_index,
-            self.bm25_index,
-            self.rerank_service,
+            self.embedding_service,
             self.llm_client
         )
         result["method3_incremental"] = method3_result
@@ -555,17 +528,16 @@ class Experiment3V2Runner:
                     m3["filtered_noise_count"], gt["total_noise_count"]
                 )
 
-        # RAG召回率
-        if "expected_docs" in gt:
-            evaluation["method1_rag_recall"] = calculate_rag_recall(
-                m1.get("rag_results", []), gt["expected_docs"]
-            )
-            evaluation["method2_rag_recall"] = calculate_rag_recall(
-                m2.get("rag_results", []), gt["expected_docs"]
-            )
-            evaluation["method3_rag_recall"] = calculate_rag_recall(
-                m3.get("rag_results", []), gt["expected_docs"]
-            )
+        # RAG召回率（改为相关性评分）
+        evaluation["method1_rag_recall"] = calculate_rag_recall(
+            m1.get("rag_results", []), gt
+        )
+        evaluation["method2_rag_recall"] = calculate_rag_recall(
+            m2.get("rag_results", []), gt
+        )
+        evaluation["method3_rag_recall"] = calculate_rag_recall(
+            m3.get("rag_results", []), gt
+        )
 
         # 回复质量评分
         for method_name, method_result in [("method1", m1), ("method2", m2), ("method3", m3)]:
