@@ -572,12 +572,8 @@ class Experiment3V3Runner:
             api_key="EMPTY"  # vLLM不需要API key
         )
 
-        # 初始化Embedding服务（使用硅基流动）
-        self.embedding_service = EmbeddingService(
-            model_name=EMBEDDING_MODEL,
-            api_key=EMBEDDING_TOKEN,
-            base_url=EMBEDDING_URL
-        )
+        # 初始化Embedding服务（从.env读取配置）
+        self.embedding_service = EmbeddingService()
 
         # 初始化向量索引
         self.vector_index = VectorIndex(self.embedding_service)
