@@ -11,6 +11,8 @@ from typing import List, Dict, Optional, Callable
 from threading import Event, Thread, Lock, Condition
 from queue import Queue, Empty
 
+from src.agents.rag_decision_agent import RAGDecisionAgent
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +44,9 @@ class VoiceAssistant:
         self.rag = rag_searcher
         self.llm = llm_service
         self.context_mgr = context_manager
+
+        # 初始化RAG判断Agent
+        self.rag_decision_agent = RAGDecisionAgent()
 
         self.system_prompt = system_prompt or self._default_system_prompt()
 
@@ -301,30 +306,42 @@ class VoiceAssistant:
         self._current_assistant_text = ""
 
         try:
-            # ===== 步骤1: RAG检索 =====
-            logger.info("[1/5] RAG检索中...")
-            rag_start_time = time.time()
-            rag_result = self.rag.search(user_text)
-            rag_elapsed = time.time() - rag_start_time
-            logger.info(f"[1/5] RAG检索完成，耗时: {rag_elapsed:.3f}秒")
+            # ===== 步骤1: 判断是否需要RAG =====
+            should_rag = self.rag_decision_agent.should_use_rag(
+                user_text,
+                self.messages[-6:] if self.messages else []
+            )
+            logger.info(f"[1/6] RAG需求判断: {'需要' if should_rag else '不需要'}")
+
+            # ===== 步骤2: RAG检索（如果需要）=====
+            if should_rag:
+                logger.info("[2/6] RAG检索中...")
+                rag_start_time = time.time()
+                rag_result = self.rag.search(user_text)
+                rag_elapsed = time.time() - rag_start_time
+                logger.info(f"[2/6] RAG检索完成，耗时: {rag_elapsed:.3f}秒")
+            else:
+                # 跳过RAG，构造空结果
+                logger.info("[2/6] 跳过RAG检索（闲聊模式）")
+                rag_result = {"type": "no_rag", "docs": []}
 
             if self.on_rag_retrieved:
                 self.on_rag_retrieved(rag_result)
 
-            # ===== 步骤2: 判断直接回答还是RAG生成 =====
+            # ===== 步骤3: 判断直接回答还是RAG生成 =====
             if rag_result["type"] == "direct_answer":
                 # 高置信度QA，直接返回答案
-                logger.info(f"[2/5] 直接回答（置信度: {rag_result['confidence']:.2f}）")
+                logger.info(f"[3/6] 直接回答（置信度: {rag_result['confidence']:.2f}）")
                 assistant_text = rag_result["answer"]
                 self._current_assistant_text = assistant_text
 
-                # ===== 步骤3: TTS播放（仅直接回答需要）=====
-                logger.info("[3/5] 播放回答...")
+                # ===== 步骤4: TTS播放（仅直接回答需要）=====
+                logger.info("[4/6] 播放回答...")
                 self._play_response(assistant_text)
 
             else:
                 # 需要LLM生成
-                logger.info("[2/5] LLM生成回答中...")
+                logger.info("[3/6] LLM生成回答中...")
 
                 # 构建RAG上下文
                 rag_context = self._build_rag_context(rag_result)
@@ -341,14 +358,14 @@ class VoiceAssistant:
                     )
 
                 # LLM流式生成（内部已实时TTS播放）
-                logger.info("[3/5] 流式生成并播放...")
+                logger.info("[4/6] 流式生成并播放...")
                 assistant_text = self._generate_with_llm(
                     user_text, rag_context, managed_messages
                 )
                 self._current_assistant_text = assistant_text
 
-            # ===== 步骤4: 更新对话历史 =====
-            logger.info("[4/5] 更新对话历史...")
+            # ===== 步骤5: 更新对话历史 =====
+            logger.info("[5/6] 更新对话历史...")
             if not was_interrupted:
                 # 正常情况：添加用户输入和assistant回复
                 self.messages.append({"role": "user", "content": user_text})
@@ -359,9 +376,9 @@ class VoiceAssistant:
                 self.messages.append({"role": "assistant", "content": assistant_text})
                 logger.info(f"已添加打断后的新对话到历史")
 
-            # ===== 步骤5: 异步压缩上下文（如果需要）=====
+            # ===== 步骤6: 异步压缩上下文（如果需要）=====
             if self.context_mgr.should_compress(self.messages):
-                logger.info("[5/5] 触发异步上下文压缩...")
+                logger.info("[6/6] 触发异步上下文压缩...")
                 Thread(target=self._compress_context_async, daemon=True).start()
 
             # 等待TTS播放完成（防止回音）

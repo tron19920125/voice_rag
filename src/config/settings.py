@@ -45,6 +45,7 @@ class QwenConfig:
     """Qwen LLM配置"""
     api_base: str
     model: str
+    sub_model: str  # 辅助模型（用于轻量级决策）
     token: str
     temperature: float = 0.7
 
@@ -112,6 +113,7 @@ class Settings:
         self.qwen = QwenConfig(
             api_base=self._get_env("QWEN_API_BASE"),
             model=self._get_env("QWEN_MODEL"),
+            sub_model=self._get_env("QWEN_SUB_MODEL"),
             token=self._get_env("QWEN_TOKEN"),
         )
 
