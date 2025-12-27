@@ -131,8 +131,8 @@ def main():
 
     # 1. 扫描文件
     print("\n[1/5] 扫描文件...")
-    doc_extensions = [".pdf", ".docx", ".doc"]
-    qa_extensions = [".json", ".jsonl", ".csv", ".xlsx", ".xls", ".md", ".markdown"]
+    doc_extensions = [".pdf", ".docx", ".doc", ".md", ".markdown"]
+    qa_extensions = [".json", ".jsonl", ".csv", ".xlsx", ".xls"]
 
     doc_files = scan_files(args.docs_dir, doc_extensions)
     qa_files = scan_files(args.qa_dir, qa_extensions)

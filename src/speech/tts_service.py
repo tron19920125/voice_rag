@@ -87,7 +87,7 @@ class TTSService:
             )
 
             # 使用默认扬声器
-            audio_config = speechsdk.AudioOutputConfig(use_default_speaker=True)
+            audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
 
             # 创建合成器
             self.synthesizer = speechsdk.SpeechSynthesizer(
@@ -160,7 +160,6 @@ class TTSService:
             )
 
             # 使用pull stream
-            stream_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=False)
             pull_stream = speechsdk.audio.PullAudioOutputStream()
             audio_config = speechsdk.audio.AudioOutputConfig(stream=pull_stream)
 

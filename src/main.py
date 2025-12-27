@@ -90,7 +90,7 @@ def main():
         logger.info("[4/6] 初始化上下文管理器...")
         context_manager = ContextManager(
             llm_service=llm_service,
-            token_threshold=settings.context.threshold,
+            token_threshold=settings.context.compression_threshold,
             keep_recent_turns=settings.context.keep_recent_turns,
         )
 
@@ -105,6 +105,7 @@ def main():
 4. 回答简洁明了，避免冗长，直击要点
 5. 对于FAQ问题，直接给出答案
 6. 遇到复杂问题时，会引导用户提供更多信息
+7. 不要在回答中使用emoji表情符号
 """.strip()
 
         assistant = VoiceAssistant(

@@ -76,17 +76,18 @@ class Settings:
     """全局配置管理"""
 
     def __init__(self):
-        # Azure Speech
+        # Azure Speech（支持旧键名SPEECH_*）
         self.azure_speech = AzureSpeechConfig(
-            key=self._get_env("SPEECH_KEY"),
-            region=self._get_env("SPEECH_REGION"),
-            endpoint=self._get_env("SPEECH_ENDPOINT"),
+            key=self._get_env_compat("AZURE_SPEECH_KEY", "SPEECH_KEY"),
+            region=self._get_env_compat("AZURE_SPEECH_REGION", "SPEECH_REGION"),
+            endpoint=self._get_env_compat("AZURE_SPEECH_ENDPOINT", "SPEECH_ENDPOINT"),
         )
 
-        # Azure AI Search
+        # Azure AI Search（支持旧键名AI_SEARCH_*）
         self.azure_search = AzureSearchConfig(
-            key=self._get_env("AI_SEARCH_KEY"),
-            endpoint=self._get_env("AI_SEARCH_ENDPOINT"),
+            key=self._get_env_compat("AZURE_SEARCH_KEY", "AI_SEARCH_KEY"),
+            endpoint=self._get_env_compat("AZURE_SEARCH_ENDPOINT", "AI_SEARCH_ENDPOINT"),
+            index_name=os.getenv("AZURE_SEARCH_INDEX_NAME", "customer-service-kb"),
         )
 
         # Qwen LLM
@@ -121,6 +122,13 @@ class Settings:
         value = os.getenv(key, default)
         if value is None:
             raise ValueError(f"环境变量 {key} 未设置，请检查 .env 文件")
+        return value
+
+    def _get_env_compat(self, new_key: str, old_key: str, default: Optional[str] = None) -> str:
+        """获取环境变量（向后兼容旧键名）"""
+        value = os.getenv(new_key) or os.getenv(old_key, default)
+        if value is None:
+            raise ValueError(f"环境变量 {new_key} 或 {old_key} 未设置，请检查 .env 文件")
         return value
 
 

@@ -4,9 +4,11 @@
 """
 
 import logging
-import asyncio
+import re
+import time
 from typing import List, Dict, Optional, Callable
 from threading import Event, Thread
+from queue import Queue, Empty
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,11 @@ class VoiceAssistant:
         self.messages: List[Dict[str, str]] = []
         self.is_running = False
         self.is_processing = False
+
+        # TTS流式播放队列
+        self.tts_queue = Queue()
+        self.tts_worker_thread: Optional[Thread] = None
+        self.is_tts_playing = False
 
         # 临时变量（用于处理单轮对话）
         self._current_user_text = None
@@ -107,13 +114,77 @@ class VoiceAssistant:
         except Exception as e:
             logger.error(f"停止STT失败: {str(e)}")
 
+        # 停止TTS worker
+        self._stop_tts_worker()
+
+    def _start_tts_worker(self):
+        """启动TTS工作线程"""
+        if self.tts_worker_thread and self.tts_worker_thread.is_alive():
+            return
+
+        self.is_tts_playing = True
+        self.tts_worker_thread = Thread(target=self._tts_worker_loop, daemon=True)
+        self.tts_worker_thread.start()
+        logger.debug("TTS worker线程已启动")
+
+    def _stop_tts_worker(self):
+        """停止TTS工作线程"""
+        if not self.tts_worker_thread:
+            return
+
+        self.is_tts_playing = False
+        # 清空队列
+        while not self.tts_queue.empty():
+            try:
+                self.tts_queue.get_nowait()
+            except Empty:
+                break
+
+        # 发送停止信号
+        self.tts_queue.put(None)
+        logger.debug("TTS worker线程已停止")
+
+    def _tts_worker_loop(self):
+        """TTS工作线程主循环"""
+        while self.is_tts_playing:
+            try:
+                # 从队列获取句子
+                sentence = self.tts_queue.get(timeout=0.5)
+
+                # None表示结束信号
+                if sentence is None:
+                    logger.debug("TTS队列结束")
+                    break
+
+                # 合成并播放
+                logger.debug(f"TTS合成: {sentence[:50]}...")
+                self.tts.synthesize_and_play(
+                    sentence,
+                    on_canceled=lambda reason: logger.error(f"TTS失败: {reason}"),
+                )
+
+            except Empty:
+                continue
+            except Exception as e:
+                logger.error(f"TTS worker错误: {str(e)}")
+
+        # 播放完成后增加安全延迟（确保音频完全播放）
+        logger.debug("等待音频播放完毕...")
+        time.sleep(1.0)
+
+        # 重置标志
+        self.is_tts_playing = False
+        logger.debug("TTS worker循环结束，已重置播放标志")
+
     def _on_stt_recognizing(self, text: str):
         """STT部分识别结果"""
         logger.debug(f"识别中: {text}")
 
     def _on_stt_recognized(self, text: str):
         """STT最终识别结果"""
-        if not self.is_running or self.is_processing:
+        # 阻止在处理期间或TTS播放期间的识别
+        if not self.is_running or self.is_processing or self.is_tts_playing:
+            logger.debug(f"忽略STT输入（正在处理或播放中）: {text}")
             return
 
         logger.info(f"用户: {text}")
@@ -184,6 +255,10 @@ class VoiceAssistant:
                 assistant_text = rag_result["answer"]
                 self._current_assistant_text = assistant_text
 
+                # ===== 步骤3: TTS播放（仅直接回答需要）=====
+                logger.info("[3/5] 播放回答...")
+                self._play_response(assistant_text)
+
             else:
                 # 需要LLM生成
                 logger.info("[2/5] LLM生成回答中...")
@@ -202,15 +277,12 @@ class VoiceAssistant:
                         managed_messages, summary
                     )
 
-                # LLM流式生成
+                # LLM流式生成（内部已实时TTS播放）
+                logger.info("[3/5] 流式生成并播放...")
                 assistant_text = self._generate_with_llm(
                     user_text, rag_context, managed_messages
                 )
                 self._current_assistant_text = assistant_text
-
-            # ===== 步骤3: TTS播放 =====
-            logger.info("[3/5] 播放回答...")
-            self._play_response(assistant_text)
 
             # ===== 步骤4: 更新对话历史 =====
             logger.info("[4/5] 更新对话历史...")
@@ -221,6 +293,11 @@ class VoiceAssistant:
             if self.context_mgr.should_compress(self.messages):
                 logger.info("[5/5] 触发异步上下文压缩...")
                 Thread(target=self._compress_context_async, daemon=True).start()
+
+            # 等待TTS播放完成（防止回音）
+            logger.info("等待TTS播放完成...")
+            while self.is_tts_playing:
+                time.sleep(0.1)
 
             logger.info("处理完成")
 
@@ -251,7 +328,7 @@ class VoiceAssistant:
     def _generate_with_llm(
         self, user_text: str, rag_context: str, messages: List[Dict[str, str]]
     ) -> str:
-        """使用LLM生成回答（流式）"""
+        """使用LLM生成回答（流式 + 实时TTS）"""
         # 构建增强的用户消息
         if rag_context:
             enhanced_query = f"{rag_context}\n\n用户问题：{user_text}"
@@ -261,12 +338,55 @@ class VoiceAssistant:
         # 添加到消息列表
         current_messages = messages + [{"role": "user", "content": enhanced_query}]
 
-        # 流式生成
+        # 启动TTS worker
+        self._start_tts_worker()
+
+        # 流式生成 + 分句处理
+        sentence_buffer = ""
         full_response = ""
+
         for chunk in self.llm.chat_stream(
             current_messages, system_prompt=self.system_prompt
         ):
             full_response += chunk
+            sentence_buffer += chunk
+
+            # 检测强句子边界（。！？\n）
+            strong_parts = re.split(r'([。！？\n])', sentence_buffer)
+
+            if len(strong_parts) > 1:
+                # 有强分隔符，按强分隔符分句
+                for i in range(0, len(strong_parts) - 1, 2):
+                    if i + 1 < len(strong_parts):
+                        sentence = strong_parts[i] + strong_parts[i+1]
+                        if sentence.strip():
+                            self.tts_queue.put(sentence.strip())
+                            logger.debug(f"TTS队列(强分): {sentence.strip()[:30]}...")
+
+                # 保留未完成的部分
+                sentence_buffer = strong_parts[-1] if len(strong_parts) % 2 == 1 else ""
+
+            elif len(sentence_buffer) > 40:
+                # 无强分隔符但buffer过长，按弱分隔符（，、；：）分句
+                weak_parts = re.split(r'([，、；：])', sentence_buffer)
+                if len(weak_parts) > 1:
+                    for i in range(0, len(weak_parts) - 1, 2):
+                        if i + 1 < len(weak_parts):
+                            sentence = weak_parts[i] + weak_parts[i+1]
+                            if sentence.strip():
+                                self.tts_queue.put(sentence.strip())
+                                logger.debug(f"TTS队列(弱分): {sentence.strip()[:30]}...")
+
+                    # 保留未完成的部分
+                    sentence_buffer = weak_parts[-1] if len(weak_parts) % 2 == 1 else ""
+
+        # 处理剩余文本
+        if sentence_buffer.strip():
+            self.tts_queue.put(sentence_buffer.strip())
+            logger.debug(f"TTS队列(剩余): {sentence_buffer.strip()[:30]}...")
+
+        # 发送结束信号
+        self.tts_queue.put(None)
 
         logger.info(f"助手: {full_response}")
 

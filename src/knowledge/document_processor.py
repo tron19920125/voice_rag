@@ -32,7 +32,7 @@ import pandas as pd
 class DocumentProcessor:
     """文档处理器：处理PDF/Word/Excel"""
 
-    def __init__(self, chunk_size: int = 800, chunk_overlap: int = 100):
+    def __init__(self, chunk_size: int = 2500, chunk_overlap: int = 200):
         """
         Args:
             chunk_size: 每个块的目标字符数
@@ -60,6 +60,8 @@ class DocumentProcessor:
             text = self._extract_word(file_path)
         elif ext in [".xlsx", ".xls"]:
             text = self._extract_excel(file_path)
+        elif ext in [".md", ".markdown"]:
+            text = self._extract_markdown(file_path)
         else:
             raise ValueError(f"不支持的文件类型: {ext}")
 
@@ -127,6 +129,12 @@ class DocumentProcessor:
                 text_parts.append(f"[Sheet: {sheet.title}]\n" + "\n".join(sheet_data))
 
         return "\n\n".join(text_parts)
+
+    def _extract_markdown(self, file_path: str) -> str:
+        """提取Markdown文本"""
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        return text
 
     def _chunk_text(self, text: str) -> List[str]:
         """
@@ -345,8 +353,8 @@ def process_file(file_path: str) -> List[Dict]:
     """
     ext = Path(file_path).suffix.lower()
 
-    # 文档类型
-    if ext in [".pdf", ".docx", ".doc"]:
+    # 文档类型（包括.md作为普通文档）
+    if ext in [".pdf", ".docx", ".doc", ".md", ".markdown"]:
         processor = DocumentProcessor()
         return processor.process_file(file_path)
 
@@ -365,8 +373,8 @@ def process_file(file_path: str) -> List[Dict]:
         processor = DocumentProcessor()
         return processor.process_file(file_path)
 
-    # QA类型
-    elif ext in [".json", ".jsonl", ".csv", ".md", ".markdown"]:
+    # QA类型（只包括结构化数据格式）
+    elif ext in [".json", ".jsonl", ".csv"]:
         processor = QAProcessor()
         return processor.process_file(file_path)
 
