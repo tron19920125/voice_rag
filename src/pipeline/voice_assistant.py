@@ -77,6 +77,7 @@ class VoiceAssistant:
         self.current_session_id = str(uuid.uuid4())  # 当前会话ID
         self.session_lock = Lock()  # 保护session_id
         self.is_tts_playing = False  # 当前是否正在播放
+        self.expected_sentences: Dict[str, int] = {}  # 记录每个session预期的句子总数 {session_id: count}
 
         # TTS并行合成（加速语音生成）
         self.tts_synthesis_executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="TTS-Synthesis")
@@ -251,19 +252,45 @@ class VoiceAssistant:
                 buffer_key = (session_id, next_play_index)
                 audio_data = None
 
-                # 等待音频ready（最多1秒）
-                for _ in range(20):  # 20 * 0.05 = 1秒
+                # 检查是否知道预期的句子总数
+                with self.session_lock:
+                    expected_count = self.expected_sentences.get(session_id, None)
+
+                # 根据是否知道预期数量，决定等待策略
+                if expected_count is not None and next_play_index < expected_count:
+                    # 还有句子未播放，持续等待（最多30秒，因为Azure TTS可能很慢）
+                    max_wait_rounds = 600  # 600 * 0.05 = 30秒
+                    wait_reason = f"等待 #{next_play_index}/{expected_count}"
+                else:
+                    # 不知道预期数量，或已播放完所有句子，等待5秒
+                    max_wait_rounds = 100  # 100 * 0.05 = 5秒
+                    wait_reason = f"探测 #{next_play_index}"
+
+                for round_num in range(max_wait_rounds):
                     with self.audio_buffer_lock:
                         if buffer_key in self.audio_buffer:
                             audio_data = self.audio_buffer.pop(buffer_key)
                             break
                     time.sleep(0.05)
 
+                    # 每5秒打印一次等待日志（避免刷屏）
+                    if round_num > 0 and round_num % 100 == 0:
+                        elapsed = round_num * 0.05
+                        logger.info(f"[TTS播放] {wait_reason}，已等待{elapsed:.1f}秒...")
+
                 if audio_data is None:
-                    # 1秒内没有音频，可能已经播放完毕
-                    self.is_tts_playing = False
-                    time.sleep(0.1)
-                    continue
+                    # 等待超时，检查是否已播放完所有预期句子
+                    if expected_count is not None and next_play_index >= expected_count:
+                        logger.info(f"[TTS播放] 已播放完所有 {expected_count} 个句子")
+                        self.is_tts_playing = False
+                        time.sleep(0.1)
+                        continue
+                    else:
+                        # 不知道预期数量，或超时，认为播放完毕
+                        logger.debug(f"[TTS播放] 等待超时，跳过 #{next_play_index}")
+                        self.is_tts_playing = False
+                        time.sleep(0.1)
+                        continue
 
                 # 检查session和中断信号
                 with self.session_lock:
@@ -553,7 +580,24 @@ class VoiceAssistant:
 
             # 等待TTS播放完成（防止回音）
             logger.info("等待TTS播放完成...")
-            while self.is_tts_playing:
+
+            # 获取当前session ID
+            with self.session_lock:
+                current_session = self.current_session_id
+
+            # 等待条件：播放完成 + 队列为空 + buffer中无当前session的音频
+            while True:
+                # 检查播放状态
+                if not self.is_tts_playing:
+                    # 检查队列是否为空
+                    if self.tts_queue.empty():
+                        # 检查buffer中是否还有当前session的音频
+                        with self.audio_buffer_lock:
+                            has_pending = any(k[0] == current_session for k in self.audio_buffer.keys())
+
+                        if not has_pending:
+                            break  # 所有条件满足，退出等待
+
                 time.sleep(0.1)
 
             logger.info("处理完成")
@@ -659,6 +703,13 @@ class VoiceAssistant:
         if not self.abort_event.is_set() and sentence_buffer.strip():
             self.tts_queue.put((session_id, sentence_index, sentence_buffer.strip()))
             logger.debug(f"TTS队列(剩余 #{sentence_index}): {sentence_buffer.strip()[:30]}...")
+            sentence_index += 1
+
+        # 记录这个session预期的句子总数（播放线程需要知道何时停止等待）
+        if not self.abort_event.is_set() and sentence_index > 0:
+            with self.session_lock:
+                self.expected_sentences[session_id] = sentence_index
+            logger.info(f"[TTS] 预期播放 {sentence_index} 个句子")
 
         logger.info(f"助手: {full_response}")
 
@@ -710,7 +761,7 @@ class VoiceAssistant:
         - 设置abort_event，立即中断LLM生成和TTS合成
         - 更新session_id，后续任务会自动跳过旧session的内容
         - 停止当前播放
-        - 清空队列中的旧任务（可选，因为worker会自动跳过）
+        - 清空队列、buffer和expected_sentences中的旧任务
         """
         logger.info("⚠️ 处理打断...")
 
@@ -746,7 +797,13 @@ class VoiceAssistant:
             if len(keys_to_remove) > 0:
                 logger.debug(f"已清空buffer中的 {len(keys_to_remove)} 个旧音频")
 
-        # 6. 保存被打断的不完整回复
+        # 6. 清空旧session的预期句子数记录
+        with self.session_lock:
+            if old_session_id in self.expected_sentences:
+                self.expected_sentences.pop(old_session_id)
+                logger.debug(f"已清空session {old_session_id[:8]} 的预期句子数")
+
+        # 7. 保存被打断的不完整回复
         if self._current_assistant_text:
             interrupted_text = self._current_assistant_text + " [被打断]"
             self.interrupted_response = interrupted_text
@@ -756,10 +813,10 @@ class VoiceAssistant:
             self.messages.append({"role": "assistant", "content": interrupted_text})
             logger.info(f"已保存被打断的回复到上下文: {interrupted_text[:50]}...")
 
-        # 7. 设置打断标志
+        # 8. 设置打断标志
         self.interrupt_requested = True
 
-        # 8. 重置处理状态
+        # 9. 重置处理状态
         self.is_processing = False
         self.is_tts_playing = False
 

@@ -186,6 +186,8 @@ class STTSileroService:
             logger.info("Silero VAD 音频采集已启动")
 
             speech_buffer = []
+            pre_buffer = []  # 预缓冲：保存语音开始前的音频帧
+            pre_buffer_size = 15  # 保留15帧（约0.5秒），确保不丢失开头
 
             frame_count = 0
             while not self._stop_event.is_set():
@@ -215,7 +217,14 @@ class STTSileroService:
 
                     if not self.is_speech and self.speech_counter >= self.min_speech_frames:
                         self.is_speech = True
-                        logger.info(f"[VAD] 语音开始 (prob={speech_prob:.4f}, counter={self.speech_counter})")
+                        # 将预缓冲的音频添加到speech_buffer开头（避免丢失开头）
+                        if pre_buffer:
+                            speech_buffer = pre_buffer + speech_buffer
+                            logger.info(f"[VAD] 语音开始 (prob={speech_prob:.4f}, counter={self.speech_counter}), 添加预缓冲 {len(pre_buffer)} 帧")
+                            pre_buffer = []
+                        else:
+                            logger.info(f"[VAD] 语音开始 (prob={speech_prob:.4f}, counter={self.speech_counter})")
+
                         # 触发语音开始回调（用于打断检测）
                         if self.on_speech_started:
                             self.on_speech_started()
@@ -237,6 +246,11 @@ class STTSileroService:
                             speech_buffer = []
                             self.is_speech = False
                             logger.info("[VAD] 等待下一段语音...")
+                    else:
+                        # 非语音状态，维护预缓冲（循环队列）
+                        pre_buffer.append(audio_chunk)
+                        if len(pre_buffer) > pre_buffer_size:
+                            pre_buffer.pop(0)  # 移除最旧的帧
 
             # 关闭流
             if self.stream:
