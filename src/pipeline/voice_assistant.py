@@ -499,6 +499,12 @@ class VoiceAssistant:
         self.abort_event.clear()
         logger.debug("已清除中断信号，开始处理新任务")
 
+        # ===== 创建新的session ID（每个请求独立session，避免expected_sentences被覆盖）=====
+        with self.session_lock:
+            old_session_id = self.current_session_id
+            self.current_session_id = str(uuid.uuid4())
+            logger.info(f"创建新session: {old_session_id[:8]} -> {self.current_session_id[:8]}")
+
         self.is_processing = True
         self._current_assistant_text = ""
 
@@ -657,7 +663,7 @@ class VoiceAssistant:
                 logger.info("检测到中断信号，停止LLM生成")
                 break
 
-            logger.info(f"[LLM] chunk: {repr(chunk)}")
+            # logger.info(f"[LLM] chunk: {repr(chunk)}")
             full_response += chunk
             sentence_buffer += chunk
 

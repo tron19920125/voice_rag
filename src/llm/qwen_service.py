@@ -76,7 +76,7 @@ class QwenService:
             for chunk in stream:
                 if chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
-                    logger.info(f"[流式] yield chunk: {repr(content)}")
+                    # logger.info(f"[流式] yield chunk: {repr(content)}")
                     yield content
 
         except Exception as e:
