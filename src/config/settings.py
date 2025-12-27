@@ -23,6 +23,16 @@ class AzureSpeechConfig:
 
 
 @dataclass
+class VADConfig:
+    """VAD配置"""
+    type: str = "azure"  # azure 或 silero
+    sample_rate: int = 16000  # Silero VAD采样率
+    threshold: float = 0.5  # Silero VAD阈值
+    min_speech_duration: float = 0.3  # 最小语音时长（秒）
+    min_silence_duration: float = 2.0  # 最小静音时长（秒，停顿多久算结束）
+
+
+@dataclass
 class AzureSearchConfig:
     """Azure AI Search配置"""
     key: str
@@ -81,6 +91,14 @@ class Settings:
             key=self._get_env_compat("AZURE_SPEECH_KEY", "SPEECH_KEY"),
             region=self._get_env_compat("AZURE_SPEECH_REGION", "SPEECH_REGION"),
             endpoint=self._get_env_compat("AZURE_SPEECH_ENDPOINT", "SPEECH_ENDPOINT"),
+        )
+
+        # VAD配置
+        self.vad = VADConfig(
+            type=os.getenv("VAD_TYPE", "azure").lower(),
+            threshold=float(os.getenv("VAD_THRESHOLD", "0.5")),
+            min_speech_duration=float(os.getenv("VAD_MIN_SPEECH_DURATION", "0.3")),
+            min_silence_duration=float(os.getenv("VAD_MIN_SILENCE_DURATION", "2.0")),
         )
 
         # Azure AI Search（支持旧键名AI_SEARCH_*）

@@ -2,28 +2,28 @@
 name = "tts-rag-workshop"
 version = "0.1.0"
 description = "虚拟销售 AI 系统 - RAG 实验开发项目"
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.14"
 dependencies = [
     "openai>=1.0.0",
     "python-dotenv>=0.19.0",
     "numpy>=1.20.0",
     "requests>=2.28.0",
     "jieba>=0.42.1",
-
     # Azure服务
     "azure-cognitiveservices-speech>=1.38.0",
     "azure-search-documents>=11.4.0",
-
     # 文档处理
     "pypdf2>=3.0.0",
     "python-docx>=1.1.0",
     "openpyxl>=3.1.0",
-
     # 音频处理
     "pyaudio>=0.2.14",
-
+    "onnxruntime>=1.19.0",
+    "resampy>=0.4.0",
     # 数据处理
     "pandas>=1.1.0",
+    "silero-vad>=6.2.0",
+    "torchaudio<2.9",
 ]
 
 [project.optional-dependencies]

@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.config.settings import settings
 from src.speech.stt_service import STTService
+from src.speech.stt_silero_service import STTSileroService
 from src.speech.tts_service import TTSService
 from src.knowledge.rag_searcher import RAGSearcher
 from src.llm.qwen_service import QwenService
@@ -49,13 +50,29 @@ def main():
     logger.info("=" * 70)
 
     try:
-        # ===== 1. 初始化服务 =====
+        # ===== 1. 初始化语音服务 =====
         logger.info("\n[1/6] 初始化语音服务...")
-        stt_service = STTService(
-            key=settings.azure_speech.key,
-            region=settings.azure_speech.region,
-            language=settings.azure_speech.language,
-        )
+        logger.info(f"VAD类型: {settings.vad.type}")
+
+        # 根据配置选择STT实现
+        if settings.vad.type == "silero":
+            logger.info("使用 Silero VAD + Azure STT")
+            stt_service = STTSileroService(
+                key=settings.azure_speech.key,
+                region=settings.azure_speech.region,
+                language=settings.azure_speech.language,
+                sample_rate=settings.vad.sample_rate,
+                vad_threshold=settings.vad.threshold,
+                min_speech_duration=settings.vad.min_speech_duration,
+                min_silence_duration=settings.vad.min_silence_duration,
+            )
+        else:
+            logger.info("使用 Azure 内置 VAD")
+            stt_service = STTService(
+                key=settings.azure_speech.key,
+                region=settings.azure_speech.region,
+                language=settings.azure_speech.language,
+            )
 
         tts_service = TTSService(
             key=settings.azure_speech.key,
