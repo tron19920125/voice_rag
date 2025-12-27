@@ -9,6 +9,21 @@ dependencies = [
     "numpy>=1.20.0",
     "requests>=2.28.0",
     "jieba>=0.42.1",
+
+    # Azure服务
+    "azure-cognitiveservices-speech>=1.38.0",
+    "azure-search-documents>=11.4.0",
+
+    # 文档处理
+    "pypdf2>=3.0.0",
+    "python-docx>=1.1.0",
+    "openpyxl>=3.1.0",
+
+    # 音频处理
+    "pyaudio>=0.2.14",
+
+    # 数据处理
+    "pandas>=1.1.0",
 ]
 
 [project.optional-dependencies]
