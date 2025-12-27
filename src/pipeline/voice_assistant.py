@@ -12,6 +12,7 @@ from threading import Event, Thread, Lock, Condition
 from queue import Queue, Empty
 
 from src.agents.rag_decision_agent import RAGDecisionAgent
+from src.agents.input_completion_agent import InputCompletionAgent
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ class VoiceAssistant:
 
         # 初始化RAG判断Agent
         self.rag_decision_agent = RAGDecisionAgent()
+        # 初始化输入完整性判断Agent
+        self.input_completion_agent = InputCompletionAgent()
 
         self.system_prompt = system_prompt or self._default_system_prompt()
 
@@ -54,6 +57,14 @@ class VoiceAssistant:
         self.messages: List[Dict[str, str]] = []
         self.is_running = False
         self.is_processing = False
+
+        # 输入缓冲（用于处理输入不完整的情况）
+        self.input_buffer = ""  # 缓冲的用户输入
+        self.input_buffer_lock = Lock()  # 保护input_buffer
+        self.pending_input_event = Event()  # 等待新输入的事件
+        self.pending_input_timer: Optional[Thread] = None  # 等待计时器线程
+        self.max_input_wait_attempts = 3  # 最多等待3次
+        self.input_wait_timeout = 2.0  # 每次等待最多2秒
 
         # 打断控制
         self.interrupt_requested = False  # 打断请求标志
@@ -254,12 +265,8 @@ class VoiceAssistant:
         if self.on_user_speech:
             self.on_user_speech(text)
 
-        # 处理用户输入（异步）
-        self._current_user_text = text
-        self._recognition_complete_event.set()
-
-        # 启动处理线程
-        Thread(target=self._process_user_input, args=(text,), daemon=True).start()
+        # 处理用户输入（带完整性判断和等待）
+        self._handle_user_input_with_completion_check(text)
 
     def _on_stt_session_started(self):
         """STT会话启动"""
@@ -274,6 +281,98 @@ class VoiceAssistant:
         logger.error(f"STT错误: {reason}")
         if self.on_error:
             self.on_error(f"语音识别错误: {reason}")
+
+    def _handle_user_input_with_completion_check(self, text: str):
+        """
+        处理用户输入（带完整性判断和等待）
+
+        逻辑：
+        1. 判断输入是否完整
+        2. 如果不完整，等待新输入（最多2秒）
+        3. 有新输入立即合并并重新判断
+        4. 最多重试3次
+        5. 然后启动正常处理流程
+        """
+        # 如果正在处理中，说明是打断，不需要完整性判断
+        if self.is_processing:
+            logger.info("检测到打断，直接处理新输入")
+            self._start_processing(text)
+            return
+
+        with self.input_buffer_lock:
+            # 如果缓冲区已有内容，合并
+            if self.input_buffer:
+                self.input_buffer += " " + text  # 用空格分隔
+                logger.info(f"合并输入: {self.input_buffer}")
+                # 触发等待事件（有新输入了）
+                self.pending_input_event.set()
+            else:
+                # 第一次输入
+                self.input_buffer = text
+                # 启动完整性判断流程（异步）
+                Thread(
+                    target=self._check_input_completion_and_process,
+                    daemon=True
+                ).start()
+
+    def _check_input_completion_and_process(self):
+        """
+        检查输入完整性并处理（带重试）
+
+        在独立线程中运行，负责判断输入完整性，并等待可能的补充输入
+        """
+        attempt = 0
+
+        while attempt < self.max_input_wait_attempts:
+            attempt += 1
+
+            with self.input_buffer_lock:
+                current_input = self.input_buffer
+                logger.info(f"[完整性判断 {attempt}/{self.max_input_wait_attempts}] 当前输入: {current_input[:50]}")
+
+            # 判断是否完整
+            is_complete = self.input_completion_agent.is_input_complete(
+                current_input,
+                self.messages[-4:] if self.messages else []
+            )
+
+            if is_complete:
+                # 输入完整，启动处理
+                logger.info(f"✓ 输入完整，启动处理")
+                self._start_processing(current_input)
+                return
+
+            # 输入不完整，等待新输入
+            if attempt < self.max_input_wait_attempts:
+                logger.info(f"✗ 输入不完整，等待{self.input_wait_timeout}秒（或新输入）...")
+                self.pending_input_event.clear()
+                # 等待新输入或超时
+                has_new_input = self.pending_input_event.wait(timeout=self.input_wait_timeout)
+
+                if has_new_input:
+                    logger.info("收到新输入，重新判断")
+                    continue
+                else:
+                    logger.info("等待超时，继续判断")
+                    continue
+            else:
+                # 达到最大重试次数，强制处理
+                logger.info(f"✗ 达到最大重试次数，强制处理: {current_input[:50]}")
+                self._start_processing(current_input)
+                return
+
+    def _start_processing(self, user_text: str):
+        """启动用户输入处理流程"""
+        # 清空缓冲区
+        with self.input_buffer_lock:
+            self.input_buffer = ""
+
+        # 更新当前用户文本
+        self._current_user_text = user_text
+        self._recognition_complete_event.set()
+
+        # 启动处理线程
+        Thread(target=self._process_user_input, args=(user_text,), daemon=True).start()
 
     def _process_user_input(self, user_text: str):
         """
