@@ -96,12 +96,51 @@ def main():
 
         # ===== 3. 初始化LLM服务 =====
         logger.info("[3/6] 初始化LLM服务...")
-        llm_service = QwenService(
-            api_base=settings.qwen.api_base,
-            model=settings.qwen.model,
-            token=settings.qwen.token,
-            temperature=settings.qwen.temperature,
-        )
+
+        if settings.qwen.use_local_vllm:
+            logger.info("使用本地vLLM服务")
+            logger.info(f"  - 主模型(14B): {settings.qwen.local_vllm_14b_base}")
+            logger.info(f"  - 辅助模型(8B): {settings.qwen.local_vllm_8b_base}")
+
+            # 主LLM服务（14B，用于对话生成）
+            llm_service = QwenService(
+                api_base=settings.qwen.local_vllm_14b_base,
+                model="Qwen/Qwen2.5-14B-Instruct",  # vllm模型名称
+                token="EMPTY",
+                temperature=settings.qwen.temperature,
+                is_local_vllm=True,
+            )
+
+            # 辅助LLM服务（8B，用于RAG判断等轻量级任务）
+            sub_llm_service = QwenService(
+                api_base=settings.qwen.local_vllm_8b_base,
+                model="Qwen/Qwen2.5-8B-Instruct",  # vllm模型名称
+                token="EMPTY",
+                temperature=settings.qwen.temperature,
+                is_local_vllm=True,
+            )
+        else:
+            logger.info("使用远程API服务")
+            logger.info(f"  - 主模型: {settings.qwen.model}")
+            logger.info(f"  - 辅助模型: {settings.qwen.sub_model}")
+
+            # 主LLM服务
+            llm_service = QwenService(
+                api_base=settings.qwen.api_base,
+                model=settings.qwen.model,
+                token=settings.qwen.token,
+                temperature=settings.qwen.temperature,
+                is_local_vllm=False,
+            )
+
+            # 辅助LLM服务
+            sub_llm_service = QwenService(
+                api_base=settings.qwen.api_base,
+                model=settings.qwen.sub_model,
+                token=settings.qwen.token,
+                temperature=settings.qwen.temperature,
+                is_local_vllm=False,
+            )
 
         # ===== 4. 初始化上下文管理器 =====
         logger.info("[4/6] 初始化上下文管理器...")
@@ -151,6 +190,7 @@ def main():
             llm_service=llm_service,
             context_manager=context_manager,
             system_prompt=system_prompt,
+            sub_llm_service=sub_llm_service,
         )
 
         # 设置回调

@@ -48,6 +48,10 @@ class QwenConfig:
     sub_model: str  # 辅助模型（用于轻量级决策）
     token: str
     temperature: float = 0.7
+    # 本地vLLM配置
+    use_local_vllm: bool = False
+    local_vllm_8b_base: str = "http://localhost:8000/v1"
+    local_vllm_14b_base: str = "http://localhost:8001/v1"
 
 
 @dataclass
@@ -115,6 +119,9 @@ class Settings:
             model=self._get_env("QWEN_MODEL"),
             sub_model=self._get_env("QWEN_SUB_MODEL"),
             token=self._get_env("QWEN_TOKEN"),
+            use_local_vllm=os.getenv("USE_LOCAL_VLLM", "false").lower() == "true",
+            local_vllm_8b_base=os.getenv("LOCAL_VLLM_8B_BASE", "http://localhost:8000/v1"),
+            local_vllm_14b_base=os.getenv("LOCAL_VLLM_14B_BASE", "http://localhost:8001/v1"),
         )
 
         # Embedding

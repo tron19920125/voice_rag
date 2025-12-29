@@ -19,6 +19,7 @@ class QwenService:
         model: str,
         token: str,
         temperature: float = 0.7,
+        is_local_vllm: bool = False,
     ):
         """
         初始化Qwen服务
@@ -28,14 +29,16 @@ class QwenService:
             model: 模型名称（如qwen-plus）
             token: API令牌
             temperature: 温度参数（0-1）
+            is_local_vllm: 是否为本地vllm服务（用于兼容性处理）
         """
         self.api_base = api_base.rstrip("/")
         self.model = model
         self.temperature = temperature
+        self.is_local_vllm = is_local_vllm
 
         # 初始化OpenAI客户端（兼容Qwen API）
         self.client = OpenAI(
-            api_key=token,
+            api_key=token if not is_local_vllm else "EMPTY",  # vllm不需要token
             base_url=api_base,
         )
 
@@ -63,14 +66,20 @@ class QwenService:
         full_messages.extend(messages)
 
         try:
+            # 构建请求参数
+            request_params = {
+                "model": self.model,
+                "messages": full_messages,
+                "temperature": self.temperature,
+                "stream": True,
+            }
+
+            # 仅远程API支持extra_body参数
+            if not self.is_local_vllm:
+                request_params["extra_body"] = {"enable_thinking": False}
+
             # 使用OpenAI SDK进行流式调用
-            stream = self.client.chat.completions.create(
-                model=self.model,
-                messages=full_messages,
-                temperature=self.temperature,
-                stream=True,
-                extra_body={"enable_thinking": False},  # 关闭思考模式
-            )
+            stream = self.client.chat.completions.create(**request_params)
 
             # 逐个返回chunk
             for chunk in stream:
@@ -107,14 +116,20 @@ class QwenService:
         full_messages.extend(messages)
 
         try:
+            # 构建请求参数
+            request_params = {
+                "model": self.model,
+                "messages": full_messages,
+                "temperature": self.temperature,
+                "stream": False,
+            }
+
+            # 仅远程API支持extra_body参数
+            if not self.is_local_vllm:
+                request_params["extra_body"] = {"enable_thinking": False}
+
             # 使用OpenAI SDK进行非流式调用
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=full_messages,
-                temperature=self.temperature,
-                stream=False,
-                extra_body={"enable_thinking": False},  # 关闭思考模式
-            )
+            response = self.client.chat.completions.create(**request_params)
 
             content = response.choices[0].message.content
             return content if content else ""

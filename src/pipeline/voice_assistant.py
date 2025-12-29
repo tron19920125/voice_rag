@@ -30,6 +30,7 @@ class VoiceAssistant:
         context_manager,
         system_prompt: Optional[str] = None,
         enable_tts_playback: bool = True,
+        sub_llm_service=None,
     ):
         """
         初始化语音助手
@@ -38,10 +39,11 @@ class VoiceAssistant:
             stt_service: STT服务
             tts_service: TTS服务
             rag_searcher: RAG检索器
-            llm_service: LLM服务
+            llm_service: LLM服务（主模型，用于对话生成）
             context_manager: 上下文管理器
             system_prompt: 系统提示词
             enable_tts_playback: 是否启用TTS播放（Web模式设为False）
+            sub_llm_service: 辅助LLM服务（用于RAG判断等轻量级任务，可选）
         """
         self.stt = stt_service
         self.tts = tts_service
@@ -53,9 +55,9 @@ class VoiceAssistant:
         self.enable_tts_playback = enable_tts_playback
 
         # 初始化RAG判断Agent
-        self.rag_decision_agent = RAGDecisionAgent()
+        self.rag_decision_agent = RAGDecisionAgent(sub_llm_service)
         # 初始化输入完整性判断Agent
-        self.input_completion_agent = InputCompletionAgent()
+        self.input_completion_agent = InputCompletionAgent(sub_llm_service)
 
         self.system_prompt = system_prompt or self._default_system_prompt()
 

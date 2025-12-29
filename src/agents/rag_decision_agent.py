@@ -14,14 +14,24 @@ logger = logging.getLogger(__name__)
 class RAGDecisionAgent:
     """RAG需求判断Agent"""
 
-    def __init__(self):
-        """初始化，使用sub_model（qwen3-8b）提供快速判断"""
-        self.sub_llm = QwenService(
-            api_base=settings.qwen.api_base,
-            model=settings.qwen.sub_model,
-            token=settings.qwen.token,
-            temperature=0.1,  # 低温度提高确定性
-        )
+    def __init__(self, sub_llm_service=None):
+        """
+        初始化，使用sub_model（qwen3-8b）提供快速判断
+
+        Args:
+            sub_llm_service: 辅助LLM服务（可选，未提供时自动创建）
+        """
+        if sub_llm_service is None:
+            # 向后兼容：自动创建
+            self.sub_llm = QwenService(
+                api_base=settings.qwen.api_base,
+                model=settings.qwen.sub_model,
+                token=settings.qwen.token,
+                temperature=0.1,
+                is_local_vllm=False,
+            )
+        else:
+            self.sub_llm = sub_llm_service
 
         self.system_prompt = """你是一个智能客服系统的决策助手。
 任务：判断用户问题是否需要查询知识库（RAG）。
