@@ -12,23 +12,31 @@ from pathlib import Path
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.config.settings import settings
-from src.speech.stt_service import STTService
-from src.speech.stt_silero_service import STTSileroService
-from src.speech.tts_service import TTSService
-from src.knowledge.rag_searcher import RAGSearcher
-from src.llm.qwen_service import QwenService
-from src.llm.context_manager import ContextManager
-from src.pipeline.voice_assistant import VoiceAssistant
-from rag_utils import EmbeddingService, RerankingService
-
-# 配置日志
+# 配置日志（必须在导入模块之前）
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+from src.config.settings import settings
+from src.speech.stt_service import STTService
+
+# 尝试导入Silero服务（需要pyaudio依赖）
+try:
+    from src.speech.stt_silero_service import STTSileroService
+    SILERO_AVAILABLE = True
+except ImportError as e:
+    SILERO_AVAILABLE = False
+    logger.warning(f"Silero VAD不可用（缺少依赖: {e}），将使用Azure内置VAD")
+
+from src.speech.tts_service import TTSService
+from src.knowledge.rag_searcher import RAGSearcher
+from src.llm.qwen_service import QwenService
+from src.llm.context_manager import ContextManager
+from src.pipeline.voice_assistant import VoiceAssistant
+from rag_utils import EmbeddingService, RerankingService
 
 
 def setup_signal_handler(assistant: VoiceAssistant):
@@ -52,10 +60,10 @@ def main():
     try:
         # ===== 1. 初始化语音服务 =====
         logger.info("\n[1/6] 初始化语音服务...")
-        logger.info(f"VAD类型: {settings.vad.type}")
+        logger.info(f"VAD配置: {settings.vad.type}")
 
-        # 根据配置选择STT实现
-        if settings.vad.type == "silero":
+        # 根据配置和依赖可用性选择STT实现
+        if settings.vad.type == "silero" and SILERO_AVAILABLE:
             logger.info("使用 Silero VAD + Azure STT")
             stt_service = STTSileroService(
                 key=settings.azure_speech.key,
@@ -67,6 +75,8 @@ def main():
                 min_silence_duration=settings.vad.min_silence_duration,
             )
         else:
+            if settings.vad.type == "silero" and not SILERO_AVAILABLE:
+                logger.warning("⚠️  Silero VAD不可用（缺少pyaudio等依赖），回退到Azure内置VAD")
             logger.info("使用 Azure 内置 VAD")
             stt_service = STTService(
                 key=settings.azure_speech.key,

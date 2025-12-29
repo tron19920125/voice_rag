@@ -35,6 +35,7 @@ class STTService:
         on_session_started: Optional[Callable[[], None]] = None,
         on_session_stopped: Optional[Callable[[], None]] = None,
         on_canceled: Optional[Callable[[str], None]] = None,
+        on_speech_started: Optional[Callable[[], None]] = None,
     ):
         """
         启动连续识别（麦克风输入 + VAD）
@@ -45,6 +46,7 @@ class STTService:
             on_session_started: 会话开始回调
             on_session_stopped: 会话停止回调
             on_canceled: 取消/错误回调
+            on_speech_started: 语音开始回调（Azure VAD不支持，仅用于接口兼容）
         """
         if self._is_recognizing:
             logger.warning("识别已在运行中")

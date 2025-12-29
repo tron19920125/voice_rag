@@ -18,11 +18,11 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # 启动服务器
 echo "🚀 启动 FastAPI 服务器..."
-echo "📍 Web 界面: http://localhost:8000"
-echo "📍 API 文档: http://localhost:8000/docs"
-echo "📍 WebSocket: ws://localhost:8000/ws"
+echo "📍 Web 界面: http://localhost:8088"
+echo "📍 API 文档: http://localhost:8088/docs"
+echo "📍 WebSocket: ws://localhost:8088/ws"
 echo ""
 echo "按 Ctrl+C 停止服务器"
 echo ""
 
-uv run uvicorn src.server.api:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn src.server.api:app --host 0.0.0.0 --port 8088 --reload

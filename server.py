@@ -16,16 +16,16 @@ if __name__ == "__main__":
     print("启动 TechFlow AI 客服 Web 服务...")
     print("=" * 70)
     print("\n访问地址:")
-    print("  - Web 界面: http://localhost:8000")
-    print("  - API 文档: http://localhost:8000/docs")
-    print("  - 健康检查: http://localhost:8000/health")
+    print("  - Web 界面: http://localhost:8088")
+    print("  - API 文档: http://localhost:8088/docs")
+    print("  - 健康检查: http://localhost:8088/health")
     print("\n按 Ctrl+C 停止服务\n")
     print("=" * 70)
 
     uvicorn.run(
         "src.server.api:app",
         host="0.0.0.0",
-        port=8000,
+        port=8088,
         reload=False,  # 生产环境关闭热重载
         log_level="info",
     )

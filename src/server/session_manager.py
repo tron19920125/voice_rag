@@ -40,6 +40,7 @@ class SessionManager:
         context_manager,
         system_prompt: Optional[str] = None,
         max_sessions: int = 100,
+        sub_llm_service=None,
     ):
         """
         初始化会话管理器
@@ -48,10 +49,11 @@ class SessionManager:
             stt_service: STT服务
             tts_service: TTS服务
             rag_searcher: RAG检索器
-            llm_service: LLM服务
+            llm_service: LLM服务（主模型）
             context_manager: 上下文管理器
             system_prompt: 系统提示词
             max_sessions: 最大会话数
+            sub_llm_service: 辅助LLM服务（用于RAG判断等轻量级任务）
         """
         self.stt_service = stt_service
         self.tts_service = tts_service
@@ -60,6 +62,7 @@ class SessionManager:
         self.context_manager = context_manager
         self.system_prompt = system_prompt
         self.max_sessions = max_sessions
+        self.sub_llm_service = sub_llm_service
 
         self._sessions: Dict[str, Session] = {}
         self._lock = Lock()  # 保护_sessions字典的并发访问
@@ -87,6 +90,7 @@ class SessionManager:
                 context_manager=self.context_manager,
                 system_prompt=self.system_prompt,
                 enable_tts_playback=False,  # Web模式：不播放，通过回调发送
+                sub_llm_service=self.sub_llm_service,
             )
             session = Session(session_id, assistant)
             self._sessions[session_id] = session

@@ -3,7 +3,8 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 获取脚本所在目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "=========================================="
@@ -81,15 +82,21 @@ echo ""
 
 cd "$PROJECT_ROOT"
 
-# 激活虚拟环境
-if [ -d ".venv" ]; then
+# 激活conda环境
+if [ -f "$HOME/miniconda3/bin/activate" ]; then
+    source "$HOME/miniconda3/bin/activate"
+    echo "  ✓ 已激活conda环境"
+elif [ -d ".venv/bin" ]; then
     source .venv/bin/activate
-elif [ -d "venv" ]; then
-    source venv/bin/activate
+    echo "  ✓ 已激活.venv环境"
 fi
 
-# 启动主程序
-uv run python src/main.py
+# 启动Web服务器
+echo "🌐 启动Web服务器（本地vLLM模式）..."
+echo "  - Web界面: http://localhost:8088"
+echo "  - API文档: http://localhost:8088/docs"
+echo ""
+python server.py
 
 # ===== 清理：退出时恢复.env =====
 trap cleanup EXIT
