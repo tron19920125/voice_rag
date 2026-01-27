@@ -1,0 +1,878 @@
+{
+  "experiment_info": {
+    "experiment_name": "实验2改进版：应用所有优化措施（本地 vLLM 部署）",
+    "timestamp": "20251220_114655",
+    "model": "Qwen/Qwen3-8B",
+    "deployment": "本地 vLLM (localhost:8000)",
+    "total_documents": 54,
+    "improvements": [
+      "新增金融行业产品文档",
+      "自定义 jieba 词典（企业名称+产品+术语）",
+      "宽松评分标准（60%通过线）",
+      "使用本地 vLLM 部署（Qwen3-8B）"
+    ]
+  },
+  "test_results": [
+    {
+      "test_id": "fusion_test_001",
+      "category": "企业背景查询",
+      "query": "鼎盛科技是做什么的？公司规模多大？",
+      "answer": "鼎盛科技有限公司主要从事智能制造领域，业务涵盖工业自动化、数据采集和IoT平台。公司成立于2015年，注册资本5000万元，员工规模约500人。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "company_profile"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_001",
+        "category": "企业背景查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 0.8,
+          "covered_points": [
+            "智能制造",
+            "2015",
+            "5000万",
+            "500人"
+          ],
+          "missing_points": [
+            "李明"
+          ]
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 72
+      },
+      "timing": {
+        "retrieval_ms": 2013.9759670128115,
+        "generation_ms": 727.8973359789234,
+        "total_ms": 2741.873302991735
+      },
+      "debug_info": {
+        "bm25_results": [
+          "1",
+          "49",
+          "45",
+          "52",
+          "4"
+        ],
+        "dense_results": [
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_001_project_0",
+          "company_009_basic"
+        ],
+        "rrf_fused": [
+          "1",
+          "company_001_basic",
+          "49",
+          "company_001_painpoints",
+          "45",
+          "company_001_relations",
+          "52",
+          "company_001_project_0",
+          "4",
+          "company_009_basic"
+        ],
+        "final_reranked": [
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_001_project_0",
+          "company_002_basic"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.13497300096787512,
+          "dense_ms": 107.94639799860306,
+          "rrf_ms": 0.017662998288869858,
+          "candidate_fetch_ms": 0.02477699308656156,
+          "rerank_ms": 1905.6560409953818,
+          "retrieval_total_ms": 2013.7798519863281
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_002",
+      "category": "合作历史查询",
+      "query": "鼎盛科技之前有没有用过我们的产品？效果怎么样？",
+      "answer": "是的，鼎盛科技有限公司曾在2023年与TechFlow合作，使用了DataStream Lite产品进行工厂数字化改造。项目周期为8周，投资金额480万元，最终实现了生产效率提升35%的显著成果。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "doc_6",
+          "title": "技术支持与培训服务",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_002",
+        "category": "合作历史查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "2023",
+            "DataStream Lite",
+            "工厂数字化改造",
+            "35%"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 98
+      },
+      "timing": {
+        "retrieval_ms": 796.9445769849699,
+        "generation_ms": 799.1656420053914,
+        "total_ms": 1596.1102189903613
+      },
+      "debug_info": {
+        "bm25_results": [
+          "1",
+          "37",
+          "53",
+          "6",
+          "47"
+        ],
+        "dense_results": [
+          "company_001_project_0",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_008_project_0"
+        ],
+        "rrf_fused": [
+          "1",
+          "company_001_project_0",
+          "37",
+          "company_001_basic",
+          "53",
+          "company_001_painpoints",
+          "6",
+          "company_001_relations",
+          "47",
+          "company_008_project_0"
+        ],
+        "final_reranked": [
+          "company_001_basic",
+          "company_001_project_0",
+          "company_001_painpoints",
+          "company_001_relations",
+          "doc_6"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.38741499884054065,
+          "dense_ms": 106.45126999588683,
+          "rrf_ms": 0.02224199124611914,
+          "candidate_fetch_ms": 0.031759991543367505,
+          "rerank_ms": 689.695514010964,
+          "retrieval_total_ms": 796.5882009884808
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_003",
+      "category": "产品推荐",
+      "query": "星辰金融集团想做实时风控，应该推荐哪个产品？",
+      "answer": "推荐使用 **DataStream Pro - 金融行业版**。该产品专为金融行业设计，具备超低延迟、高并发处理和智能风控规则等核心优势，能够有效解决星辰金融集团在实时风控方面的痛点，如响应延迟高和交易数据处理瓶颈。同时，其合规支持功能也符合金融行业的监管要求。",
+      "retrieved_docs": [
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_002_painpoints",
+          "title": "星辰金融集团 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "doc_flowmind_enhanced",
+          "title": "FlowMind 平台 - 跨行业智能监控与分析平台",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_datastream_pro_financial",
+          "title": "DataStream Pro - 金融行业实时风控解决方案",
+          "type": "unknown"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "company_relations"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_003",
+        "category": "产品推荐",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "金融",
+            "DataStream Pro",
+            "实时",
+            "风控"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 131
+      },
+      "timing": {
+        "retrieval_ms": 491.1549410026055,
+        "generation_ms": 942.7399440028239,
+        "total_ms": 1433.8948850054294
+      },
+      "debug_info": {
+        "bm25_results": [
+          "6",
+          "53",
+          "5",
+          "4",
+          "49"
+        ],
+        "dense_results": [
+          "doc_datastream_pro_financial",
+          "company_002_painpoints",
+          "company_002_basic",
+          "doc_flowmind_enhanced",
+          "doc_2"
+        ],
+        "rrf_fused": [
+          "6",
+          "doc_datastream_pro_financial",
+          "53",
+          "company_002_painpoints",
+          "5",
+          "company_002_basic",
+          "4",
+          "doc_flowmind_enhanced",
+          "49",
+          "doc_2"
+        ],
+        "final_reranked": [
+          "company_002_basic",
+          "company_002_painpoints",
+          "doc_flowmind_enhanced",
+          "doc_datastream_pro_financial",
+          "company_002_relations"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.24372598272748291,
+          "dense_ms": 121.60359800327569,
+          "rrf_ms": 0.01670198980718851,
+          "candidate_fetch_ms": 0.022611988242715597,
+          "rerank_ms": 369.043372978922,
+          "retrieval_total_ms": 490.93001094297506
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_004",
+      "category": "关系查询",
+      "query": "鼎盛科技的母公司是谁？投资方有哪些？",
+      "answer": "鼎盛科技的母公司是鼎盛集团，投资方包括红杉资本和IDG。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "company_relations"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_004",
+        "category": "关系查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "鼎盛集团",
+            "红杉资本",
+            "IDG"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 28
+      },
+      "timing": {
+        "retrieval_ms": 4208.209687989438,
+        "generation_ms": 284.7352640237659,
+        "total_ms": 4492.944952013204
+      },
+      "debug_info": {
+        "bm25_results": [
+          "1",
+          "43",
+          "48",
+          "44",
+          "26"
+        ],
+        "dense_results": [
+          "company_001_relations",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_project_0",
+          "company_009_relations"
+        ],
+        "rrf_fused": [
+          "1",
+          "company_001_relations",
+          "43",
+          "company_001_basic",
+          "48",
+          "company_001_painpoints",
+          "44",
+          "company_001_project_0",
+          "26",
+          "company_009_relations"
+        ],
+        "final_reranked": [
+          "company_001_relations",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_project_0",
+          "company_002_relations"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.24215300800278783,
+          "dense_ms": 95.92862200224772,
+          "rrf_ms": 0.01575998612679541,
+          "candidate_fetch_ms": 0.02000702079385519,
+          "rerank_ms": 4111.77906600642,
+          "retrieval_total_ms": 4207.985608023591
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_005",
+      "category": "竞品客户识别",
+      "query": "恒通电子商务之前有没有合作过？",
+      "answer": "根据现有信息，恒通电子商务目前没有明确提及与 TechFlow Industrial Solutions 的合作记录。但其当前使用竞品：XX竞品实时数据平台。若需进一步确认合作情况，建议直接联系企业获取最新信息。",
+      "retrieved_docs": [
+        {
+          "id": "company_006_relations",
+          "title": "恒通电子商务 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_006_basic",
+          "title": "恒通电子商务 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_006_painpoints",
+          "title": "恒通电子商务 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "doc_10",
+          "title": "蓝天电子制造案例 - 质量追溯系统",
+          "type": "unknown"
+        },
+        {
+          "id": "company_003_project_0",
+          "title": "明远物流科技 合作案例（2022）",
+          "type": "project_history"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_005",
+        "category": "竞品客户识别",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 0.6666666666666666,
+          "covered_points": [
+            "恒通电子商务",
+            "竞品"
+          ],
+          "missing_points": [
+            "未合作"
+          ]
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 106
+      },
+      "timing": {
+        "retrieval_ms": 1605.9929319890216,
+        "generation_ms": 661.0395559982862,
+        "total_ms": 2267.032487987308
+      },
+      "debug_info": {
+        "bm25_results": [
+          "19",
+          "18",
+          "20",
+          "2",
+          "23"
+        ],
+        "dense_results": [
+          "company_006_relations",
+          "company_006_basic",
+          "company_006_painpoints",
+          "company_008_project_0",
+          "company_001_project_0"
+        ],
+        "rrf_fused": [
+          "19",
+          "company_006_relations",
+          "18",
+          "company_006_basic",
+          "20",
+          "company_006_painpoints",
+          "2",
+          "company_008_project_0",
+          "23",
+          "company_001_project_0"
+        ],
+        "final_reranked": [
+          "company_006_relations",
+          "company_006_basic",
+          "company_006_painpoints",
+          "doc_10",
+          "company_003_project_0"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.1631949853617698,
+          "dense_ms": 107.55501099629328,
+          "rrf_ms": 0.01588001032359898,
+          "candidate_fetch_ms": 0.02086901804432273,
+          "rerank_ms": 1498.1593699776568,
+          "retrieval_total_ms": 1605.9143249876797
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_006",
+      "category": "混合检索效果验证",
+      "query": "DataStream Pro 适合哪些行业？",
+      "answer": "DataStream Pro 适合以下行业：\n\n- 证券公司  \n- 期货公司  \n- 银行  \n- 支付平台  \n- 金融科技公司  \n- 保险公司  \n\n该产品专注于金融行业的实时风控与反欺诈需求，适用于需要高频交易数据分析、支付交易监控、证券交易风险预警及合规审计的场景。",
+      "retrieved_docs": [
+        {
+          "id": "doc_datastream_pro_financial",
+          "title": "DataStream Pro - 金融行业实时风控解决方案",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_flowmind_enhanced",
+          "title": "FlowMind 平台 - 跨行业智能监控与分析平台",
+          "type": "unknown"
+        },
+        {
+          "id": "company_006_painpoints",
+          "title": "恒通电子商务 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "doc_4",
+          "title": "FlowMind 工业物联网平台",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_006",
+        "category": "混合检索效果验证",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "DataStream Pro",
+            "金融",
+            "实时"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 139
+      },
+      "timing": {
+        "retrieval_ms": 828.3399679930881,
+        "generation_ms": 981.3651449803729,
+        "total_ms": 1809.705112973461
+      },
+      "debug_info": {
+        "bm25_results": [
+          "52",
+          "53",
+          "36",
+          "2",
+          "43"
+        ],
+        "dense_results": [
+          "doc_datastream_pro_financial",
+          "doc_flowmind_enhanced",
+          "doc_8",
+          "company_001_project_0",
+          "doc_4"
+        ],
+        "rrf_fused": [
+          "52",
+          "doc_datastream_pro_financial",
+          "53",
+          "doc_flowmind_enhanced",
+          "36",
+          "doc_8",
+          "2",
+          "company_001_project_0",
+          "43",
+          "doc_4"
+        ],
+        "final_reranked": [
+          "doc_datastream_pro_financial",
+          "doc_flowmind_enhanced",
+          "company_006_painpoints",
+          "company_001_project_0",
+          "doc_4"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.21613400895148516,
+          "dense_ms": 87.20025201910175,
+          "rrf_ms": 0.01966700074262917,
+          "candidate_fetch_ms": 0.025748013285920024,
+          "rerank_ms": 740.8488929795567,
+          "retrieval_total_ms": 828.3106940216385
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_007",
+      "category": "痛点匹配推荐",
+      "query": "云帆新能源有生产数据孤岛的问题，推荐什么方案？",
+      "answer": "云帆新能源存在生产数据孤岛问题，建议推荐 **TechFlow Industrial Solutions 的工业数据集成平台（Industrial Data Integration Platform）**。该方案可实现多系统数据整合，打通生产、设备、质量等数据流，提升数据可视化与分析能力，解决数据孤岛问题，助力企业实现智能制造升级。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_004_painpoints",
+          "title": "云帆新能源 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_009_painpoints",
+          "title": "智信半导体 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_004_basic",
+          "title": "云帆新能源 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_004_relations",
+          "title": "云帆新能源 企业关系",
+          "type": "company_relations"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_007",
+        "category": "痛点匹配推荐",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 0.6666666666666666,
+          "covered_points": [
+            "云帆新能源",
+            "数据孤岛"
+          ],
+          "missing_points": [
+            "FlowMind"
+          ]
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": [
+            "business_docs"
+          ]
+        },
+        "answer_length": 167
+      },
+      "timing": {
+        "retrieval_ms": 715.7646070118062,
+        "generation_ms": 875.1699689892121,
+        "total_ms": 1590.9345760010183
+      },
+      "debug_info": {
+        "bm25_results": [
+          "3",
+          "51",
+          "31",
+          "48",
+          "53"
+        ],
+        "dense_results": [
+          "company_004_painpoints",
+          "company_004_basic",
+          "company_001_painpoints",
+          "company_004_relations",
+          "company_009_painpoints"
+        ],
+        "rrf_fused": [
+          "3",
+          "company_004_painpoints",
+          "51",
+          "company_004_basic",
+          "31",
+          "company_001_painpoints",
+          "48",
+          "company_004_relations",
+          "53",
+          "company_009_painpoints"
+        ],
+        "final_reranked": [
+          "company_001_painpoints",
+          "company_004_painpoints",
+          "company_009_painpoints",
+          "company_004_basic",
+          "company_004_relations"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.25319401174783707,
+          "dense_ms": 95.80625701346435,
+          "rrf_ms": 0.015969009837135673,
+          "candidate_fetch_ms": 0.021249987185001373,
+          "rerank_ms": 619.6401060151402,
+          "retrieval_total_ms": 715.7367760373745
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_008",
+      "category": "多企业对比查询",
+      "query": "明远物流科技和晨曦食品加工都用过什么产品？",
+      "answer": "明远物流科技和晨曦食品加工都使用过 **FlowControl-X100** 产品。",
+      "retrieved_docs": [
+        {
+          "id": "company_008_basic",
+          "title": "晨曦食品加工 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_008_project_0",
+          "title": "晨曦食品加工 合作案例（2021）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_008_painpoints",
+          "title": "晨曦食品加工 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_008_relations",
+          "title": "晨曦食品加工 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_003_project_0",
+          "title": "明远物流科技 合作案例（2022）",
+          "type": "project_history"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_008",
+        "category": "多企业对比查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "明远物流科技",
+            "FlowControl-X100",
+            "晨曦食品加工"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_needs",
+            "company_profile",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 42
+      },
+      "timing": {
+        "retrieval_ms": 834.1295729915146,
+        "generation_ms": 327.88420902215876,
+        "total_ms": 1162.0137820136733
+      },
+      "debug_info": {
+        "bm25_results": [
+          "9",
+          "27",
+          "26",
+          "8",
+          "28"
+        ],
+        "dense_results": [
+          "company_008_basic",
+          "company_008_relations",
+          "company_008_project_0",
+          "company_008_painpoints",
+          "company_003_painpoints"
+        ],
+        "rrf_fused": [
+          "9",
+          "company_008_basic",
+          "27",
+          "company_008_relations",
+          "26",
+          "company_008_project_0",
+          "8",
+          "company_008_painpoints",
+          "28",
+          "company_003_painpoints"
+        ],
+        "final_reranked": [
+          "company_008_basic",
+          "company_008_project_0",
+          "company_008_painpoints",
+          "company_008_relations",
+          "company_003_project_0"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.22988999262452126,
+          "dense_ms": 132.40101499832235,
+          "rrf_ms": 0.01794402487576008,
+          "candidate_fetch_ms": 0.026269000954926014,
+          "rerank_ms": 701.0861760063563,
+          "retrieval_total_ms": 833.7612940231338
+        }
+      }
+    }
+  ]
+}

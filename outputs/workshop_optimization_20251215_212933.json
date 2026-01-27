@@ -1,0 +1,227 @@
+{
+  "test_case": {
+    "id": "fusion_test_003",
+    "category": "产品推荐",
+    "query": "星辰金融集团想做实时风控，应该推荐哪个产品？",
+    "expected_sources": {
+      "company_profile": true,
+      "company_needs": true,
+      "business_docs": true
+    },
+    "expected_key_points": [
+      "金融",
+      "DataStream Pro",
+      "实时",
+      "风控"
+    ],
+    "expected_fusion_value": true,
+    "description": "测试产品推荐场景，验证企业痛点与产品特性匹配"
+  },
+  "baseline": {
+    "method": "baseline",
+    "answer": "星辰金融集团的实时风控痛点主要集中在“实时风控延迟高”和“交易数据处理瓶颈”。根据其行业属性（金融科技）及需求，推荐使用 **FlowMind 平台**。\n\nFlowMind 是 TechFlow 提供的实时监控与数据分析平台，能够有效支持高频交易场景下的实时风控需求，具备低延迟、高并发处理能力，可与现有风控系统集成，提升决策效率与准确性。",
+    "retrieved_docs": [
+      {
+        "id": "company_002_basic",
+        "type": "company_profile",
+        "title": "星辰金融集团 企业档案",
+        "content": "【企业名称】星辰金融集团\n【行业】金融科技\n【成立时间】2010-06-01\n【注册资本】2亿元\n【员工规模】2000人\n【CEO】王芳\n【经营范围】证券交易、风控系统、支付平台",
+        "rrf_score": 0.016129032258064516,
+        "rerank_score": 0.47249627113342285
+      },
+      {
+        "id": "company_002_painpoints",
+        "type": "company_needs",
+        "title": "星辰金融集团 业务痛点",
+        "content": "【企业名称】星辰金融集团\n【行业】金融科技\n【当前痛点】\n- 实时风控延迟高\n- 交易数据处理瓶颈\n- 合规压力大",
+        "rrf_score": 0.01639344262295082,
+        "rerank_score": 0.47013434767723083
+      },
+      {
+        "id": "company_002_relations",
+        "type": "company_relations",
+        "title": "星辰金融集团 企业关系",
+        "content": "【企业名称】星辰金融集团\n【母公司】None\n【子公司】星辰证券、星辰支付、星辰保险\n【投资方】腾讯、软银",
+        "rrf_score": 0.015625,
+        "rerank_score": 0.08287816494703293
+      },
+      {
+        "id": "doc_2",
+        "title": "生产效率提升案例 - 星辰汽车零部件厂",
+        "content": "【客户背景】\n星辰汽车零部件制造厂\n- 规模：员工 500 人，年产值 6 亿\n- 主要产品：发动机零部件、传动系统部件\n- 面临挑战：生产效率低下，产品不良率高达 18%\n\n【实施前状况】\n- 生产效率：60% 设备利用率\n- 产品不良率：18%（行业平均 6%）\n- 设备停机：平均每周 5 次故障停机\n- 库存周转：45 天\n- 人工依赖：大量质检依赖人工\n\n【解决方案】\n1. 部署 FlowControl-X500 控制器（15 套）\n2. 集成 FlowMind 平台进行实时监控和数据分析\n3. 实施 AI 驱动的质量追溯系统\n4. 部署温度、振动传感器网络\n\n【实施过程】\n- 第一阶段（3 周）：设备连接和数据采集\n- 第二阶段（3 周）：FlowMind 平台部署\n- 第三阶段（2 周）：质量系统集成\n- 总计：8 周完成部署和调试\n\n【实施成果】\n- 生产效率提升：42%\n- 产品不良率：从 18% 降至 6%\n- 设备利用率：提升至 85%\n- 库存周转：缩短至 28 天\n- 设备停机：减少 60%，平均每周 2 次\n- 人工成本：降低 25%\n\n【经济效益】\n- 总投资：¥480 万（设备 + 软件 + 实施）\n- 年节省成本：¥2800 万\n  - 质量改善节省：¥1200 万\n  - 效率提升增收：¥1200 万\n  - 人工成本降低：¥400 万\n- 投资回报周期：18 个月\n\n【客户评价】\n\"TechFlow 的解决方案超出了我们的预期。不仅提升了效率，更重要的是让我们的生产过程变得可控、可追溯。\"\n—— 星辰汽车制造总监 李明",
+        "rrf_score": 0.015873015873015872,
+        "rerank_score": 0.01314900629222393
+      },
+      {
+        "id": "doc_12",
+        "title": "FlowControl-X550 定制版本（特殊订制）",
+        "content": "FlowControl-X550 是针对特大型企业的定制版本，非标准产品。\n\n【定制说明】\n- X550 不是标准产品，需要定制\n- 仅面向年产值 50 亿以上企业\n- 起订量：20 套以上\n- 定制周期：6-12 个月\n\n【X550 vs X500】\n- X500：标准产品，随时购买\n- X550：定制产品，需要提前沟通\n\n【规格（定制范围）】\n- 适用规模：500-2000 台设备\n- 价格：¥80000-200000/套（根据定制需求）\n- 交货周期：6-12 个月\n\n【重要提醒】\n一般客户无需考虑 X550，标准的 X500 已经足够强大！\nX550 主要面向特殊行业（核电、高铁、航空）。",
+        "rrf_score": 0.014285714285714285,
+        "rerank_score": 0.004382455255836248
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 1114.742582999952,
+      "generation_ms": 2621.2421659997744
+    },
+    "debug_info": {
+      "bm25_results": [
+        "6",
+        "5",
+        "4",
+        "37",
+        "34"
+      ],
+      "dense_results": [
+        "company_002_painpoints",
+        "company_002_basic",
+        "doc_2",
+        "company_002_relations",
+        "doc_4"
+      ],
+      "rrf_fused": [
+        "6",
+        "company_002_painpoints",
+        "5",
+        "company_002_basic",
+        "4",
+        "doc_2",
+        "37",
+        "company_002_relations",
+        "34",
+        "doc_4"
+      ],
+      "final_reranked": [
+        "company_002_basic",
+        "company_002_painpoints",
+        "company_002_relations",
+        "doc_2",
+        "doc_12"
+      ],
+      "overlap_bm25_dense": 0,
+      "latency": {
+        "bm25_ms": 0.07129199957489618,
+        "dense_ms": 394.7263750001184,
+        "rrf_ms": 0.048999999762600055,
+        "candidate_fetch_ms": 0.04837500000576256,
+        "rerank_ms": 719.7592910001731,
+        "retrieval_total_ms": 1114.6543329996348
+      }
+    },
+    "evaluation": {
+      "recall_score": 0.75,
+      "covered_points": [
+        "金融",
+        "实时",
+        "风控"
+      ],
+      "missing_points": [
+        "DataStream Pro"
+      ],
+      "passed": true
+    }
+  },
+  "optimized": {
+    "method": "optimized",
+    "answer": "推荐使用 **DataStream Pro - 金融行业版**。该产品专为金融行业设计，具备超低延迟、高并发处理和智能风控规则等核心优势，能够有效解决星辰金融集团在实时风控方面的痛点，如响应延迟高和交易数据处理瓶颈。同时，其合规支持功能也符合金融行业的监管要求。",
+    "retrieved_docs": [
+      {
+        "id": "company_002_basic",
+        "type": "company_profile",
+        "title": "星辰金融集团 企业档案",
+        "content": "【企业名称】星辰金融集团\n【行业】金融科技\n【成立时间】2010-06-01\n【注册资本】2亿元\n【员工规模】2000人\n【CEO】王芳\n【经营范围】证券交易、风控系统、支付平台",
+        "rrf_score": 0.015873015873015872,
+        "rerank_score": 0.47449228167533875
+      },
+      {
+        "id": "company_002_painpoints",
+        "type": "company_needs",
+        "title": "星辰金融集团 业务痛点",
+        "content": "【企业名称】星辰金融集团\n【行业】金融科技\n【当前痛点】\n- 实时风控延迟高\n- 交易数据处理瓶颈\n- 合规压力大",
+        "rrf_score": 0.016129032258064516,
+        "rerank_score": 0.466303288936615
+      },
+      {
+        "id": "doc_flowmind_enhanced",
+        "title": "FlowMind 平台 - 跨行业智能监控与分析平台",
+        "content": "【产品名称】FlowMind 智能平台\n\n【产品定位】\n工业物联网 + 数据分析 + 智能决策的一体化平台\n\n【核心能力】\n1. **实时监控**：设备状态、生产指标、业务数据\n2. **智能分析**：AI 驱动的异常检测、趋势预测\n3. **质量追溯**：全流程数据追溯与审计\n4. **决策支持**：可视化报表与智能推荐\n\n【适用行业】\n- 制造业：质量管理、生产监控\n- 医疗器械：GMP 合规、批次追溯\n- 食品加工：食品安全追溯\n- 化工行业：安全监控、环保治理\n- **金融科技**：风控监控、合规审计（扩展功能）\n\n【金融行业应用】（新增）\n虽然 FlowMind 主要面向制造业，但其数据监控和追溯能力也可应用于金融领域：\n- 交易数据监控\n- 风控规则引擎\n- 合规审计日志\n- 注：金融实时风控建议优先选择 DataStream Pro\n\n【价格】标准版：50万元/年，金融定制版：需评估\n",
+        "rrf_score": 0.015625,
+        "rerank_score": 0.45571139454841614
+      },
+      {
+        "id": "doc_datastream_pro_financial",
+        "title": "DataStream Pro - 金融行业实时风控解决方案",
+        "content": "【产品名称】DataStream Pro - 金融行业版\n\n【适用场景】\n- 实时风控与反欺诈\n- 高频交易数据分析\n- 支付交易监控\n- 证券交易风险预警\n- 合规监控与审计\n\n【核心优势】\n- **超低延迟**：10ms 级实时响应，满足金融级风控要求\n- **高并发处理**：支持每秒百万级交易数据处理\n- **智能风控规则**：内置金融风控模型，可定制化风险阈值\n- **合规支持**：符合金融行业监管要求，支持审计日志\n\n【技术特性】\n- 分布式流处理架构\n- 支持复杂事件处理（CEP）\n- 实时数据仓库集成\n- 多维度风险评分\n\n【适用企业类型】\n- 证券公司、期货公司\n- 银行、支付平台\n- 金融科技公司\n- 保险公司\n\n【成功案例】\n- 某证券公司：交易风控响应时间从 500ms 降至 8ms\n- 某支付平台：欺诈识别准确率提升至 99.2%\n\n【价格】企业版：80万元/年起\n【实施周期】6-8 周\n",
+        "rrf_score": 0.01639344262295082,
+        "rerank_score": 0.32977861166000366
+      },
+      {
+        "id": "company_002_relations",
+        "type": "company_relations",
+        "title": "星辰金融集团 企业关系",
+        "content": "【企业名称】星辰金融集团\n【母公司】None\n【子公司】星辰证券、星辰支付、星辰保险\n【投资方】腾讯、软银",
+        "rrf_score": 0.015151515151515152,
+        "rerank_score": 0.08386306464672089
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 951.7522920000374,
+      "generation_ms": 1350.3892910002833
+    },
+    "debug_info": {
+      "bm25_results": [
+        "6",
+        "53",
+        "5",
+        "4",
+        "49"
+      ],
+      "dense_results": [
+        "doc_datastream_pro_financial",
+        "company_002_painpoints",
+        "company_002_basic",
+        "doc_flowmind_enhanced",
+        "doc_2"
+      ],
+      "rrf_fused": [
+        "6",
+        "doc_datastream_pro_financial",
+        "53",
+        "company_002_painpoints",
+        "5",
+        "company_002_basic",
+        "4",
+        "doc_flowmind_enhanced",
+        "49",
+        "doc_2"
+      ],
+      "final_reranked": [
+        "company_002_basic",
+        "company_002_painpoints",
+        "doc_flowmind_enhanced",
+        "doc_datastream_pro_financial",
+        "company_002_relations"
+      ],
+      "overlap_bm25_dense": 0,
+      "latency": {
+        "bm25_ms": 0.11795899990829639,
+        "dense_ms": 291.7297079998207,
+        "rrf_ms": 0.05091600041851052,
+        "candidate_fetch_ms": 0.059250000049360096,
+        "rerank_ms": 659.6889579996059,
+        "retrieval_total_ms": 951.6467909998028
+      }
+    },
+    "evaluation": {
+      "recall_score": 1.0,
+      "covered_points": [
+        "金融",
+        "DataStream Pro",
+        "实时",
+        "风控"
+      ],
+      "missing_points": [],
+      "passed": true
+    }
+  }
+}

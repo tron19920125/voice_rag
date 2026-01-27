@@ -1,0 +1,166 @@
+{
+  "A": {
+    "method": "A_business_only_dense",
+    "answer": "星辰金融集团的业务性质与 TechFlow 的工业自动化产品线（如 FlowControl、FlowMind 等）不匹配，因此目前没有适合其“实时风控”需求的产品推荐。TechFlow 的解决方案主要面向制造业客户，专注于设备控制、数据采集、质量追溯和生产优化等领域。\n\n建议星辰金融集团联系 TechFlow 的金融行业解决方案团队，探讨定制化服务或合作可能性。",
+    "retrieved_docs": [
+      {
+        "id": "unknown",
+        "title": "生产效率提升案例 - 星辰汽车零部件厂"
+      },
+      {
+        "id": "unknown",
+        "title": "FlowControl-X550 定制版本（特殊订制）"
+      },
+      {
+        "id": "unknown",
+        "title": "TechFlow FlowMonitor 监控系统产品介绍"
+      },
+      {
+        "id": "unknown",
+        "title": "技术支持与培训服务"
+      },
+      {
+        "id": "unknown",
+        "title": "FlowMind 工业物联网平台"
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 934.440583000196,
+      "generation_ms": 2387.942916999691
+    }
+  },
+  "B": {
+    "method": "B_company_only_bm25",
+    "answer": "基于星辰金融集团的实时风控需求，推荐使用 **FlowControl-X500**。该产品专为高并发、低延迟的实时数据处理场景设计，能够有效解决交易数据处理瓶颈和实时风控延迟高的问题，同时支持合规性监控与自动化规则引擎，契合其合规压力大的痛点。",
+    "retrieved_docs": [
+      {
+        "id": "company_002_painpoints",
+        "title": "星辰金融集团 业务痛点"
+      },
+      {
+        "id": "company_002_relations",
+        "title": "星辰金融集团 企业关系"
+      },
+      {
+        "id": "company_002_basic",
+        "title": "星辰金融集团 企业档案"
+      },
+      {
+        "id": "company_010_project_0",
+        "title": "泰和纺织集团 合作案例（2022）"
+      },
+      {
+        "id": "company_007_project_0",
+        "title": "天启化工集团 合作案例（2023）"
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 0.23229199996421812,
+      "generation_ms": 1230.8132920002208
+    }
+  },
+  "C": {
+    "method": "C_all_dense",
+    "answer": "星辰金融集团的实时风控痛点主要集中在“实时风控延迟高”和“交易数据处理瓶颈”，而其业务属于金融科技领域。根据知识库内容，TechFlow Industrial Solutions 的产品中没有直接针对金融风控的解决方案。因此，**目前无法推荐具体产品**，建议与 TechFlow 工程师进一步沟通，探讨定制化风控系统方案。",
+    "retrieved_docs": [
+      {
+        "id": "unknown",
+        "title": "星辰金融集团 企业档案"
+      },
+      {
+        "id": "unknown",
+        "title": "星辰金融集团 业务痛点"
+      },
+      {
+        "id": "unknown",
+        "title": "星辰金融集团 企业关系"
+      },
+      {
+        "id": "unknown",
+        "title": "生产效率提升案例 - 星辰汽车零部件厂"
+      },
+      {
+        "id": "unknown",
+        "title": "FlowControl-X550 定制版本（特殊订制）"
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 1078.9918750001561,
+      "generation_ms": 1704.5456249998097
+    }
+  },
+  "D": {
+    "method": "D_hybrid",
+    "answer": "星辰金融集团的实时风控痛点主要集中在“实时风控延迟高”和“交易数据处理瓶颈”，因此推荐使用 **FlowMind 平台**。该平台具备实时监控与数据分析能力，可有效提升风控响应速度和数据处理效率，契合其业务需求。若需进一步定制化功能，可结合具体场景深入沟通。",
+    "retrieved_docs": [
+      {
+        "id": "company_002_basic",
+        "title": "星辰金融集团 企业档案"
+      },
+      {
+        "id": "company_002_painpoints",
+        "title": "星辰金融集团 业务痛点"
+      },
+      {
+        "id": "company_002_relations",
+        "title": "星辰金融集团 企业关系"
+      },
+      {
+        "id": "doc_2",
+        "title": "生产效率提升案例 - 星辰汽车零部件厂"
+      },
+      {
+        "id": "doc_12",
+        "title": "FlowControl-X550 定制版本（特殊订制）"
+      }
+    ],
+    "timing": {
+      "retrieval_ms": 935.3282090000903,
+      "generation_ms": 1623.6127500001203
+    },
+    "debug_info": {
+      "bm25_results": [
+        "6",
+        "5",
+        "4",
+        "37",
+        "34"
+      ],
+      "dense_results": [
+        "company_002_painpoints",
+        "company_002_basic",
+        "doc_2",
+        "company_002_relations",
+        "doc_4"
+      ],
+      "rrf_fused": [
+        "6",
+        "company_002_painpoints",
+        "5",
+        "company_002_basic",
+        "4",
+        "doc_2",
+        "37",
+        "company_002_relations",
+        "34",
+        "doc_4"
+      ],
+      "final_reranked": [
+        "company_002_basic",
+        "company_002_painpoints",
+        "company_002_relations",
+        "doc_2",
+        "doc_12"
+      ],
+      "overlap_bm25_dense": 0,
+      "latency": {
+        "bm25_ms": 0.1177919998553989,
+        "dense_ms": 294.7049170002174,
+        "rrf_ms": 0.050999999984924216,
+        "candidate_fetch_ms": 0.08533400023225113,
+        "rerank_ms": 640.2732500000639,
+        "retrieval_total_ms": 935.2322930003538
+      }
+    }
+  }
+}

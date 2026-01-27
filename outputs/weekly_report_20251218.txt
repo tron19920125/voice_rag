@@ -1,0 +1,67 @@
+
+周报（截至 2025-12-18）
+
+本周已完成
+1) 多模态 RAG Demo 梳理与总结：基于源码与运行效果，整理架构、技术栈、数据流与控制流，形成端到端设计文档。
+2) Azure 部署与发布：使用 azd 完成资源创建与应用发布；修复订阅权限/配额、Blob 存储权限、Cohere 模型不可用等问题；索引与嵌入切换为 indexer-image-verbal。
+3) 问题复现与链路梳理：在本地与测试环境多轮复现图片/视频引用错误、回答不准确、多语言检索不完整等，明确数据→检索→生成的完整问题链路。
+4) 改进建议清单：从文档分块策略、索引字段设计、检索过滤条件、Prompt 约束、多语言支持等维度提出可实施优化，并按优先级排序。
+5) 实验推进：完成实验1模型对比详细设计与虚构知识库；实现实验2的 BM25+Dense 混合检索，完成 4 方案对比与 8 个测试用例验证，发现混合检索互补性强（重叠度≈0），数据质量是关键因素。
+6) 工程与环境：新增基础设施验证脚本与 API Token 验证工具，完善项目结构；准备并验证服务器本地 vLLM 环境（Qwen3-8B，Tensor Parallel=2，禁用思考模式）。
+
+问题与改进
+- 复现问题：图片/视频引用错误、部分回答不精准、多语言检索覆盖不全。
+- 根因要点：文档分块与索引字段不匹配、检索过滤条件不完善、Prompt 约束不足、跨语种召回与对齐薄弱。
+- 初步改进：优化分块与字段映射、引入混合检索与重排、完善多语言管道、收敛 Prompt、增加数据清洗与一致性校验。
+
+工程与环境
+- 本地/服务器：编写并运行服务启动脚本，配置 Hugging Face 镜像加速；完成服务器环境准备与基础测试尝试。
+- 验证工具：基础设施连通性检测与 API Token 自检，降低部署与运行时故障排查成本。
+
+实验进展
+- 实验1：完成对比设计与数据基座（虚构知识库），明确评测维度与流程。
+- 实验2：实现 BM25 + Dense 混合检索，完成多方案对比与 8 用例验证；输出代码、结果与 Workshop 教学案例。
+
+下周目标
+1) 在服务器上进行本地模型测试
+   - 目标：在 Azure V100 服务器上稳定跑通本地 vLLM 服务，并完成基础连通性与响应质量验证。
+   - 关键点：
+     * 使用 Qwen/Qwen3-8B，通过 Tensor Parallelism(2) 在 2×V100(16GB) 上部署。
+     * 设置兼容项：VLLM_ATTENTION_BACKEND=TORCH_SDPA、VLLM_USE_FLASHINFER_SAMPLER=0、--enforce-eager。
+     * 禁用思考模式（enable_thinking=false / chat_template_kwargs.enable_thinking=false），降低延迟与token消耗。
+   - 建议步骤：
+     * 启动：bash scripts/start_local_services.sh
+     * 联通性测试：curl http://localhost:8000/v1/models
+     * 功能性问答自测：对齐云端 API 行为，确保引用与语言输出正确。
+   - 验收标准：
+     * 首次推理可用（允许较高延迟）；后续请求稳定返回。
+     * 关键接口可用（/v1/models, /v1/chat/completions）。
+
+2) 实验三：本地模型部署性能对比（并落地成 Notebook）
+   - 目标：在真实服务器环境（Azure V100）上部署本地 LLM，并与云端 API 进行性能对比。
+   - 指标：平均延迟、首次推理延迟、后续推理延迟、生成 Token 数量（吞吐可选）。
+   - 本地配置（参考现有脚本）：
+     * vLLM 0.11.0，Qwen/Qwen3-8B，Tensor Parallelism=2
+     * Attention Backend: TORCH_SDPA（V100 兼容）
+     * 思考模式：禁用；启动参数 --reasoning-parser qwen3
+   - 云端配置：通义千问 qwen3-8b（思考模式禁用）
+   - 实施计划：
+     * 启动服务：bash scripts/start_local_services.sh
+     * 运行测试：python experiments/test_03_simple.py
+     * 汇总结果：outputs/experiment3_simple_*.json
+     * 停止服务：bash scripts/stop_local_services.sh
+   - 预期产出：
+     * Notebook（实验记录与可视化）：notebooks/experiment3_local_vs_cloud.ipynb（包含环境检查、服务启动、测试执行、结果可视化、结论）
+     * 结论与建议：对比云端/本地在延迟、稳定性、成本、隐私与运维复杂度的取舍，给出场景选择建议。
+
+风险与依赖
+- 资源与配额：订阅配额、GPU 资源调度需提前确认。
+- 显存与模型：V100(16GB) 对 8B 模型的显存边界较紧，需 Tensor Parallel。
+- 网络与权限：云端 API 可用性、私网/代理设置影响对比实验。
+- 模型可用性：镜像/下载通道（HF_ENDPOINT）与模型授权影响启动时效。
+
+附：相关文件与入口
+- 服务启动/停止脚本：scripts/start_local_services.sh, scripts/stop_local_services.sh
+- 性能对比脚本：experiments/test_03_simple.py
+- 实验三说明：experiments/EXPERIMENT3_README.md
+- 历史输出：outputs/（实验结果 JSON 与分析）

@@ -1,0 +1,302 @@
+[DEBUG] ========== 实验开始 ==========
+[DEBUG] 并发数: 8
+[DEBUG] A. 创建实验运行器...
+[DEBUG] 1. 开始初始化实验运行器...
+[DEBUG] 2. 创建 OpenAI 客户端...
+[DEBUG] 3. OpenAI 客户端创建成功
+[DEBUG] 4. 初始化 Embedding 服务...
+[DEBUG] 5. 初始化 Reranking 服务...
+[DEBUG] 6. 初始化 VectorIndex...
+[DEBUG] 7. RAG 组件初始化完成
+[DEBUG] 8. 准备构建向量索引...
+正在构建向量索引...
+📊 正在嵌入 16 个文档...
+✓ 成功索引 16 个文档
+向量索引构建完成，共 16 篇文档
+
+[DEBUG] 9. 向量索引构建完成
+[DEBUG] 10. 实验运行器初始化完成
+
+[DEBUG] B. 实验运行器创建完成
+[DEBUG] C. 开始运行所有测试...
+
+============================================================
+开始实验1：模型对比实验
+总测试数: 36
+并发数: 8
+============================================================
+
+
+[进度] 1/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.53s
+  生成速度: 9.06 tokens/s
+
+[进度] 2/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.52s
+  生成速度: 4.75 tokens/s
+
+[进度] 3/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.75s
+  生成速度: 7.66 tokens/s
+
+[进度] 4/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.52s
+  生成速度: 4.56 tokens/s
+
+[进度] 5/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.62s
+  生成速度: 4.06 tokens/s
+
+[进度] 6/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.56s
+  生成速度: 9.78 tokens/s
+
+[进度] 7/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 0.67s
+  生成速度: 9.97 tokens/s
+
+[进度] 8/36 完成
+  场景: 复杂多需求分析
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.52s
+  生成速度: 2.89 tokens/s
+
+[进度] 9/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.46s
+  生成速度: 6.53 tokens/s
+
+[进度] 10/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.56s
+  生成速度: 6.58 tokens/s
+结果已保存到: /Users/haoquan/workspace/tts/outputs/experiment1_results_20251213_195931.json
+
+[进度] 11/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.42s
+  生成速度: 4.58 tokens/s
+
+[进度] 12/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.51s
+  生成速度: 3.93 tokens/s
+
+[进度] 13/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.50s
+  生成速度: 5.49 tokens/s
+
+[进度] 14/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.43s
+  生成速度: 8.69 tokens/s
+
+[进度] 15/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.51s
+  生成速度: 6.19 tokens/s
+
+[进度] 16/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.84s
+  生成速度: 7.18 tokens/s
+
+[进度] 17/36 完成
+  场景: 技术对比与决策
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 0.49s
+  生成速度: 6.80 tokens/s
+
+[进度] 18/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.40s
+  生成速度: 7.38 tokens/s
+
+[进度] 19/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.76s
+  生成速度: 4.58 tokens/s
+
+[进度] 20/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.60s
+  生成速度: 6.97 tokens/s
+结果已保存到: /Users/haoquan/workspace/tts/outputs/experiment1_results_20251213_200000.json
+
+[进度] 21/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.47s
+  生成速度: 8.81 tokens/s
+
+[进度] 22/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.50s
+  生成速度: 10.77 tokens/s
+
+[进度] 23/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.42s
+  生成速度: 5.14 tokens/s
+
+[进度] 24/36 完成
+  场景: 陷阱问题（幻觉测试）
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 0.68s
+  生成速度: 9.70 tokens/s
+
+[进度] 25/36 完成
+  场景: ROI 计算与说服
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 0.78s
+  生成速度: 8.43 tokens/s
+
+[进度] 26/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.44s
+  生成速度: 7.59 tokens/s
+
+[进度] 27/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.44s
+  生成速度: 6.24 tokens/s
+
+[进度] 28/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-8b
+  模式: 无 RAG
+  首token延迟: 0.43s
+  生成速度: 4.98 tokens/s
+
+[进度] 29/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.50s
+  生成速度: 2.88 tokens/s
+
+[进度] 30/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-8b
+  模式: 有 RAG
+  首token延迟: 0.56s
+  生成速度: 4.38 tokens/s
+结果已保存到: /Users/haoquan/workspace/tts/outputs/experiment1_results_20251213_200033.json
+
+[进度] 31/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-14b
+  模式: 无 RAG
+  首token延迟: 0.47s
+  生成速度: 8.50 tokens/s
+
+[进度] 32/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-14b
+  模式: 有 RAG
+  首token延迟: 0.52s
+  生成速度: 8.47 tokens/s
+
+[进度] 33/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 1.31s
+  生成速度: 8.26 tokens/s
+
+[进度] 34/36 完成
+  场景: 近似匹配精确性测试
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.43s
+  生成速度: 8.11 tokens/s
+
+[进度] 35/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-32b
+  模式: 无 RAG
+  首token延迟: 0.42s
+  生成速度: 9.24 tokens/s
+
+[进度] 36/36 完成
+  场景: 近义词语义区分测试
+  模型: qwen3-32b
+  模式: 有 RAG
+  首token延迟: 0.46s
+  生成速度: 8.86 tokens/s
+结果已保存到: /Users/haoquan/workspace/tts/outputs/experiment1_results_20251213_200059.json
+
+============================================================
+实验完成！共完成 36 个测试
+============================================================
+
+[DEBUG] D. 所有测试完成
+[DEBUG] E. 开始生成报告...
+Traceback (most recent call last):
+  File "/Users/haoquan/workspace/tts/experiments/test_01_model_comparison.py", line 764, in <module>
+    main()
+    ~~~~^^
+  File "/Users/haoquan/workspace/tts/experiments/test_01_model_comparison.py", line 756, in main
+    runner.generate_report()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/haoquan/workspace/tts/experiments/test_01_model_comparison.py", line 653, in generate_report
+    no_rag_scores = stats[model_name]["no_rag"]
+                    ~~~~~^^^^^^^^^^^^
+KeyError: 'qwen3-72b'

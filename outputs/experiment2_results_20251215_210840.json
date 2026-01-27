@@ -1,0 +1,1065 @@
+{
+  "experiment_info": {
+    "experiment_name": "实验2：企业图谱 + 业务文档的混合 RAG 检索",
+    "timestamp": "20251215_210840",
+    "model": "qwen3-8b",
+    "total_documents": 52,
+    "company_documents": 36,
+    "business_documents": 16
+  },
+  "baseline_comparison": {
+    "hybrid": {
+      "test_id": "fusion_test_003",
+      "category": "产品推荐",
+      "query": "星辰金融集团想做实时风控，应该推荐哪个产品？",
+      "answer": "星辰金融集团作为一家专注于金融科技的企业，其核心业务包括证券交易、风控系统和支付平台。当前面临的主要痛点是**实时风控延迟高**、**交易数据处理瓶颈**以及**合规压力大**。因此，在推荐产品时，需要重点关注能够提升实时风控能力、优化数据处理效率，并满足合规要求的解决方案。\n\n### 推荐产品：FlowMind 实时风控平台\n\n#### 一、产品特性与优势\n1. **实时数据分析能力**  \n   FlowMind 平台具备强大的实时数据处理能力，支持对海量交易数据进行毫秒级响应，有效解决星辰金融集团在实时风控中的延迟问题。\n\n2. **智能风控模型**  \n   平台内置多种风控算法和规则引擎，可针对不同业务场景（如证券交易、支付交易）定制化配置，帮助星辰金融实现更精准的风险识别与预警。\n\n3. **合规性支持**  \n   FlowMind 支持多维度的数据审计与日志记录功能，符合金融行业的监管要求，有助于降低合规风险。\n\n4. **高扩展性与灵活性**  \n   平台架构灵活，可根据星辰金融的实际业务规模进行横向扩展，适应未来业务增长需求。\n\n#### 二、与竞品的差异化优势\n- **相比传统风控系统**：FlowMind 不仅提供基础的风控规则，还结合 AI 技术实现动态风险评估，提升决策效率。\n- **相比其他第三方风控平台**：FlowMind 提供端到端的解决方案，涵盖数据采集、分析、预警、反馈等全流程，减少系统集成复杂度。\n\n#### 三、实施建议\n1. **部署方案**  \n   - 部署 FlowMind 平台，集成至现有风控系统中，实现数据实时接入与分析。\n   - 结合 FlowControl-X500 控制器（标准版本），用于设备或系统的数据采集与监控，进一步增强数据完整性。\n\n2. **实施周期**  \n   - 第一阶段（2-3 周）：系统对接与数据采集准备。\n   - 第二阶段（3-4 周）：FlowMind 平台部署与规则配置。\n   - 第三阶段（1-2 周）：测试与优化，确保系统稳定运行。\n\n3. **预期效果**  \n   - 实时风控响应时间缩短 50% 以上。\n   - 交易数据处理效率提升 30%-40%。\n   - 合规审计效率提高，降低违规风险。\n\n#### 四、结论\n基于星辰金融集团的行业属性、业务痛点及技术需求，**FlowMind 实时风控平台**是最为合适的推荐产品。它不仅能够有效解决当前的实时风控延迟和数据处理瓶颈，还能通过智能化手段提升整体风控水平，助力企业实现更高效、更安全的金融服务。",
+      "retrieved_docs": [
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_002_painpoints",
+          "title": "星辰金融集团 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "doc_2",
+          "title": "生产效率提升案例 - 星辰汽车零部件厂",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_12",
+          "title": "FlowControl-X550 定制版本（特殊订制）",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_003",
+        "category": "产品推荐",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.75,
+          "covered_points": [
+            "金融",
+            "实时",
+            "风控"
+          ],
+          "missing_points": [
+            "DataStream Pro"
+          ]
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            null,
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": [
+            "business_docs"
+          ]
+        },
+        "answer_length": 1094
+      },
+      "timing": {
+        "retrieval_ms": 919.0869589999693,
+        "generation_ms": 8626.942583000073,
+        "total_ms": 9546.029542000042
+      },
+      "debug_info": {
+        "bm25_results": [
+          "6",
+          "5",
+          "4",
+          "37",
+          "34"
+        ],
+        "dense_results": [
+          "company_002_painpoints",
+          "company_002_basic",
+          "doc_2",
+          "company_002_relations",
+          "doc_4"
+        ],
+        "rrf_fused": [
+          "6",
+          "company_002_painpoints",
+          "5",
+          "company_002_basic",
+          "4",
+          "doc_2",
+          "37",
+          "company_002_relations",
+          "34",
+          "doc_4"
+        ],
+        "final_reranked": [
+          "company_002_basic",
+          "company_002_painpoints",
+          "company_002_relations",
+          "doc_2",
+          "doc_12"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.08324999998876592,
+          "dense_ms": 265.7299580000654,
+          "rrf_ms": 0.07458400000359688,
+          "candidate_fetch_ms": 0.08716599995750585,
+          "rerank_ms": 652.900499999987,
+          "retrieval_total_ms": 918.8754580000023
+        }
+      }
+    },
+    "dense_only": {
+      "test_id": "fusion_test_003",
+      "category": "产品推荐",
+      "query": "星辰金融集团想做实时风控，应该推荐哪个产品？",
+      "answer": "星辰金融集团作为一家专注于金融科技的企业，其核心业务包括证券交易、风控系统和支付平台。根据其当前痛点——**实时风控延迟高、交易数据处理瓶颈、合规压力大**，我们可以从 TechFlow Industrial Solutions 的产品线中推荐最适合的解决方案。\n\n### 推荐产品：FlowMind 实时风控平台\n\n#### 一、产品特性与匹配度分析\n1. **实时风控能力**  \n   FlowMind 是一款专为金融行业设计的智能风控平台，具备以下核心功能：\n   - **毫秒级响应**：支持对高频交易数据进行实时分析，确保在交易发生的同时完成风险识别与拦截。\n   - **多维度风控模型**：集成信用评分、行为分析、反欺诈规则引擎等模块，满足复杂风控场景需求。\n   - **可扩展架构**：支持对接多种数据源（如交易日志、用户行为、市场行情），适用于证券、支付、保险等多业务场景。\n\n2. **数据处理能力**  \n   针对星辰金融集团面临的“交易数据处理瓶颈”，FlowMind 提供了高效的数据处理引擎：\n   - 支持 PB 级数据流的实时处理与分析。\n   - 内置分布式计算框架，可横向扩展以应对高并发交易场景。\n   - 提供可视化监控面板，便于实时追踪数据处理状态与性能指标。\n\n3. **合规性管理**  \n   在金融行业，合规是企业运营的核心要求之一。FlowMind 提供以下合规支持：\n   - 自动化合规规则配置，支持监管政策动态更新。\n   - 审计日志记录与追溯功能，满足监管机构对交易透明度的要求。\n   - 多国合规标准适配（如 GDPR、CCPA、国内金融监管要求）。\n\n#### 二、差异化优势说明\n- **对比竞品客户**：虽然星辰金融集团与部分金融科技公司存在竞争关系，但TechFlow的FlowMind平台在以下几个方面具有显著优势：\n  - **本地化部署支持**：可根据星辰金融集团的实际IT架构进行定制化部署，保障数据安全与系统稳定性。\n  - **灵活的API接口**：提供丰富的API接口，便于与现有交易系统、支付平台及风控系统无缝集成。\n  - **持续优化服务**：TechFlow提供7×24小时技术支持与定期系统优化建议，确保平台长期稳定运行。\n\n#### 三、实施建议\n1. **初步评估**：建议星辰金融集团先进行系统现状评估，明确当前风控系统的瓶颈点与改进需求。\n2. **方案定制**：根据评估结果，TechFlow可提供定制化的FlowMind实施方案，包括系统架构设计、数据迁移策略、人员培训计划等。\n3. **分阶段部署**：可采用“试点先行、逐步推广”的方式，优先在某一业务板块（如证券交易或支付平台）上线，验证效果后再全面推广。\n\n#### 四、总结\n针对星辰金融集团在**实时风控、数据处理与合规管理**方面的核心需求，**FlowMind 实时风控平台**是最为契合的选择。该平台不仅能够有效解决当前痛点，还能为未来业务扩展提供强大的技术支撑。我们建议尽快启动项目评估与方案设计，以实现更高效的风控体系与更高的业务合规性。",
+      "retrieved_docs": [
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "unknown"
+        },
+        {
+          "id": "company_002_painpoints",
+          "title": "星辰金融集团 业务痛点",
+          "type": "unknown"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_2",
+          "title": "生产效率提升案例 - 星辰汽车零部件厂",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_12",
+          "title": "FlowControl-X550 定制版本（特殊订制）",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_003",
+        "category": "产品推荐",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.75,
+          "covered_points": [
+            "金融",
+            "实时",
+            "风控"
+          ],
+          "missing_points": [
+            "DataStream Pro"
+          ]
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            null
+          ],
+          "missing_sources": [
+            "company_profile",
+            "company_needs",
+            "business_docs"
+          ]
+        },
+        "answer_length": 1313
+      },
+      "timing": {
+        "retrieval_ms": 1137.4726669998836,
+        "generation_ms": 10909.176083000148,
+        "total_ms": 12046.648750000031
+      },
+      "debug_info": {
+        "method": "dense_only"
+      }
+    }
+  },
+  "all_test_results": [
+    {
+      "test_id": "fusion_test_001",
+      "category": "企业背景查询",
+      "query": "鼎盛科技是做什么的？公司规模多大？",
+      "answer": "鼎盛科技有限公司是一家专注于**智能制造领域**的企业，主要业务涵盖**工业自动化、数据采集以及IoT平台**的开发与应用。公司成立于2015年3月15日，注册资本为5000万元人民币，员工规模达到**500人**，显示出其在智能制造行业的一定实力和运营能力。\n\n作为鼎盛集团旗下的核心企业，鼎盛科技在工业数字化转型方面积累了丰富的经验，并通过与TechFlow Industrial Solutions等合作伙伴的项目合作（如2023年的工厂数字化改造项目），成功实现了生产效率提升35%的显著成果。这进一步体现了公司在智能制造领域的专业能力和技术实力。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "company_profile"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_001",
+        "category": "企业背景查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 0.8,
+          "covered_points": [
+            "智能制造",
+            "2015",
+            "5000万",
+            "500人"
+          ],
+          "missing_points": [
+            "李明"
+          ]
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 278
+      },
+      "timing": {
+        "retrieval_ms": 983.8057089998529,
+        "generation_ms": 2735.2203329999156,
+        "total_ms": 3719.0260419997685
+      },
+      "debug_info": {
+        "bm25_results": [
+          "0",
+          "1",
+          "3",
+          "2",
+          "45"
+        ],
+        "dense_results": [
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_001_project_0",
+          "company_009_basic"
+        ],
+        "rrf_fused": [
+          "0",
+          "company_001_basic",
+          "1",
+          "company_001_painpoints",
+          "3",
+          "company_001_relations",
+          "2",
+          "company_001_project_0",
+          "45",
+          "company_009_basic"
+        ],
+        "final_reranked": [
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_001_project_0",
+          "company_002_basic"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.8533749999060092,
+          "dense_ms": 331.341084000087,
+          "rrf_ms": 0.06000000007588824,
+          "candidate_fetch_ms": 0.09649999992689118,
+          "rerank_ms": 651.3494170001195,
+          "retrieval_total_ms": 983.7003760001153
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_002",
+      "category": "合作历史查询",
+      "query": "鼎盛科技之前有没有用过我们的产品？效果怎么样？",
+      "answer": "根据我们的合作记录，鼎盛科技有限公司确实在2023年与TechFlow Industrial Solutions有过合作。具体项目为“工厂数字化改造”，在该项目中，鼎盛科技使用了我们旗下的 **DataStream Lite** 产品。\n\n### 合作详情：\n- **合作时间**：2023年  \n- **使用产品**：DataStream Lite  \n- **项目成果**：生产效率提升 **35%**  \n- **投资金额**：480万元  \n- **项目周期**：8周  \n- **合作方**：TechFlow Industrial Solutions  \n\n### 效果评估：\n- **数据整合能力**：DataStream Lite 在项目中成功实现了对鼎盛科技多个产线的数据采集与集成，有效解决了其“生产数据孤岛”的痛点。\n- **设备监控与维护**：通过实时监控设备运行状态，显著降低了设备故障率，提升了整体设备利用率（OEE）。\n- **库存管理优化**：结合系统提供的数据分析功能，鼎盛科技进一步优化了库存管理流程，减少了库存积压和缺货风险。\n\n### 客户反馈：\n- 鼎盛科技在项目结束后对TechFlow的服务和技术支持给予了高度评价，特别是在项目交付速度、系统稳定性及后续技术支持方面表现突出。\n- 项目完成后，鼎盛科技继续选择与TechFlow保持合作，并在后续的数字化升级中引入了更多TechFlow的产品和服务。\n\n综上所述，鼎盛科技之前确实使用过我们的产品，并且取得了显著的成效。如果您有进一步的数字化升级需求，我们可以基于此次合作经验，为您量身定制更全面的解决方案。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "doc_6",
+          "title": "技术支持与培训服务",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_002",
+        "category": "合作历史查询",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "2023",
+            "DataStream Lite",
+            "工厂数字化改造",
+            "35%"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            null,
+            "company_profile",
+            "company_relations",
+            "project_history",
+            "company_needs"
+          ],
+          "missing_sources": [
+            "business_docs"
+          ]
+        },
+        "answer_length": 701
+      },
+      "timing": {
+        "retrieval_ms": 937.7969170000142,
+        "generation_ms": 5532.26087500002,
+        "total_ms": 6470.057792000034
+      },
+      "debug_info": {
+        "bm25_results": [
+          "2",
+          "1",
+          "3",
+          "0",
+          "37"
+        ],
+        "dense_results": [
+          "company_001_project_0",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_relations",
+          "company_008_project_0"
+        ],
+        "rrf_fused": [
+          "2",
+          "company_001_project_0",
+          "1",
+          "company_001_basic",
+          "3",
+          "company_001_painpoints",
+          "0",
+          "company_001_relations",
+          "37",
+          "company_008_project_0"
+        ],
+        "final_reranked": [
+          "company_001_basic",
+          "company_001_project_0",
+          "company_001_painpoints",
+          "company_001_relations",
+          "doc_6"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.8855829998992704,
+          "dense_ms": 300.74708300003294,
+          "rrf_ms": 0.03520799987200007,
+          "candidate_fetch_ms": 0.03845800006274658,
+          "rerank_ms": 635.989249999966,
+          "retrieval_total_ms": 937.6955819998329
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_003",
+      "category": "产品推荐",
+      "query": "星辰金融集团想做实时风控，应该推荐哪个产品？",
+      "answer": "星辰金融集团作为一家专注于金融科技的企业，其核心业务包括证券交易、风控系统和支付平台。根据其当前痛点——**实时风控延迟高、交易数据处理瓶颈、合规压力大**，我们可以从 TechFlow Industrial Solutions 的产品线中推荐最适合的解决方案。\n\n---\n\n### ✅ 推荐产品：**FlowMind 实时风控平台**\n\n#### 一、产品特性与优势\n\n1. **实时数据分析能力**\n   - FlowMind 平台具备强大的实时数据处理能力，支持每秒数百万条交易数据的实时分析，显著降低风控延迟。\n   - 可集成多种数据源（如交易日志、用户行为、市场行情等），实现多维度风险识别。\n\n2. **智能风控模型**\n   - 内置机器学习算法，可自动识别异常交易模式，提升风险预警的准确率。\n   - 支持自定义规则引擎，满足不同业务场景下的合规要求。\n\n3. **高可用性架构**\n   - 支持分布式部署，确保在高并发交易场景下系统的稳定运行。\n   - 提供灾备方案，保障数据安全与业务连续性。\n\n4. **合规管理模块**\n   - 集成监管合规功能，支持实时监控与审计追踪，满足金融行业的严格合规要求。\n   - 提供可视化报表，便于管理层进行决策分析。\n\n---\n\n### 📌 为什么选择 FlowMind 而不是其他产品？\n\n- **对比竞品**：相比市场上常见的风控系统，FlowMind 在实时性、灵活性和扩展性方面具有明显优势，尤其适合像星辰金融集团这样对数据处理效率和合规性要求极高的企业。\n- **差异化优势**：\n  - **低延迟处理**：通过优化算法和分布式架构，显著减少风控响应时间。\n  - **灵活扩展**：可根据业务增长快速扩展计算资源，无需大规模更换系统。\n  - **深度集成**：可无缝对接现有交易系统、支付平台及风控数据库，降低实施成本。\n\n---\n\n### 📈 实施价值预测\n\n| 项目 | 现状 | 改进后 | 预期收益 |\n|------|------|--------|----------|\n| 风控延迟 | 高 | 实时/近实时 | 降低欺诈风险，提升客户信任 |\n| 数据处理能力 | 瓶颈 | 高效处理 | 提升交易吞吐量，增强系统稳定性 |\n| 合规压力 | 大 | 全面覆盖 | 满足监管要求，避免法律风险 |\n| 运维成本 | 高 | 优化管理 | 减少人工干预，提高运维效率 |\n\n---\n\n### 📌 建议实施步骤\n\n1. **需求调研**：明确风控规则、数据来源、合规要求等关键指标。\n2. **系统集成**：将 FlowMind 平台与现有交易系统、支付平台进行对接。\n3. **模型训练与优化**：基于历史数据训练风控模型，持续优化算法性能。\n4. **上线测试**：分阶段上线，确保系统稳定运行。\n5. **持续监控与迭代**：定期评估系统表现，根据业务变化调整策略。\n\n---\n\n### 📌 总结\n\n针对星辰金融集团在**实时风控**方面的核心需求，**FlowMind 实时风控平台**是最为合适的选择。它不仅能够解决当前的高延迟和数据处理瓶颈问题，还能有效应对日益严格的合规要求，助力企业在金融科技领域保持竞争优势。\n\n如需进一步了解产品细节或定制化方案，欢迎随时联系我们的技术团队。",
+      "retrieved_docs": [
+        {
+          "id": "company_002_basic",
+          "title": "星辰金融集团 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_002_painpoints",
+          "title": "星辰金融集团 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "doc_2",
+          "title": "生产效率提升案例 - 星辰汽车零部件厂",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_12",
+          "title": "FlowControl-X550 定制版本（特殊订制）",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_003",
+        "category": "产品推荐",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.75,
+          "covered_points": [
+            "金融",
+            "实时",
+            "风控"
+          ],
+          "missing_points": [
+            "DataStream Pro"
+          ]
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            null,
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": [
+            "business_docs"
+          ]
+        },
+        "answer_length": 1395
+      },
+      "timing": {
+        "retrieval_ms": 1087.16441699994,
+        "generation_ms": 11757.015416000058,
+        "total_ms": 12844.179832999998
+      },
+      "debug_info": {
+        "bm25_results": [
+          "6",
+          "5",
+          "4",
+          "37",
+          "34"
+        ],
+        "dense_results": [
+          "company_002_painpoints",
+          "company_002_basic",
+          "doc_2",
+          "company_002_relations",
+          "doc_4"
+        ],
+        "rrf_fused": [
+          "6",
+          "company_002_painpoints",
+          "5",
+          "company_002_basic",
+          "4",
+          "doc_2",
+          "37",
+          "company_002_relations",
+          "34",
+          "doc_4"
+        ],
+        "final_reranked": [
+          "company_002_basic",
+          "company_002_painpoints",
+          "company_002_relations",
+          "doc_2",
+          "doc_12"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.9462499999699503,
+          "dense_ms": 296.3532920000489,
+          "rrf_ms": 0.03883299996232381,
+          "candidate_fetch_ms": 0.03887500020027801,
+          "rerank_ms": 789.7099580000031,
+          "retrieval_total_ms": 1087.0872080001845
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_004",
+      "category": "关系查询",
+      "query": "鼎盛科技的母公司是谁？投资方有哪些？",
+      "answer": "鼎盛科技有限公司的母公司是**鼎盛集团**。其投资方包括**红杉资本**和**IDG**。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_relations",
+          "title": "鼎盛科技有限公司 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_001_basic",
+          "title": "鼎盛科技有限公司 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_002_relations",
+          "title": "星辰金融集团 企业关系",
+          "type": "company_relations"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_004",
+        "category": "关系查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "鼎盛集团",
+            "红杉资本",
+            "IDG"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "project_history",
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 45
+      },
+      "timing": {
+        "retrieval_ms": 852.0847499999036,
+        "generation_ms": 926.3592920001429,
+        "total_ms": 1778.4440420000465
+      },
+      "debug_info": {
+        "bm25_results": [
+          "1",
+          "8",
+          "3",
+          "0",
+          "2"
+        ],
+        "dense_results": [
+          "company_001_relations",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_project_0",
+          "company_009_relations"
+        ],
+        "rrf_fused": [
+          "1",
+          "company_001_relations",
+          "8",
+          "company_001_basic",
+          "3",
+          "company_001_painpoints",
+          "0",
+          "company_001_project_0",
+          "2",
+          "company_009_relations"
+        ],
+        "final_reranked": [
+          "company_001_relations",
+          "company_001_basic",
+          "company_001_painpoints",
+          "company_001_project_0",
+          "company_002_relations"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.6370000000970322,
+          "dense_ms": 269.84233300004234,
+          "rrf_ms": 0.030791999961365946,
+          "candidate_fetch_ms": 0.03220799999326118,
+          "rerank_ms": 581.4477500000521,
+          "retrieval_total_ms": 851.9900830001461
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_005",
+      "category": "竞品客户识别",
+      "query": "恒通电子商务之前有没有合作过？",
+      "answer": "根据现有知识库内容，**恒通电子商务目前没有明确记录显示与 TechFlow Industrial Solutions 有过直接合作**。不过，我们可以通过以下信息进行分析和推测：\n\n### 1. **企业背景与行业定位**\n- 恒通电子商务是一家成立于2014年的电商平台，注册资本达5亿元，员工规模超过3000人，业务涵盖B2C电商、供应链管理及数据分析。\n- 其主要痛点包括：库存周转慢、供应链可视化差、大促期间系统压力大。\n\n### 2. **当前使用的竞品**\n- 恒通电子商务目前使用的是“XX竞品实时数据平台”，这表明其在供应链管理和数据采集方面已有一定的技术基础，但可能仍存在性能瓶颈或功能局限。\n\n### 3. **TechFlow Industrial Solutions 的产品匹配性**\n- TechFlow 提供的 **FlowControl-X100 控制器** 和 **二维码追溯系统** 等产品，虽然主要用于制造和物流领域（如蓝天电子、明远物流等案例），但在某些场景下也可以为电商平台提供支持，例如：\n  - **供应链可视化**：通过数据采集和分析，提升库存周转效率；\n  - **系统稳定性优化**：在大促期间，通过高效的数据处理能力缓解系统压力；\n  - **质量追溯延伸**：如果恒通涉及自营商品或第三方商家的商品管理，可引入追溯系统以提升商品管理透明度。\n\n### 4. **潜在合作机会**\n尽管目前没有直接合作记录，但基于恒通电子商务的业务需求和技术痛点，TechFlow 可以提供以下解决方案建议：\n- **供应链优化方案**：结合 FlowControl-X100 实时数据采集能力，实现库存动态监控与预测，提升库存周转率。\n- **系统扩容与稳定性增强**：针对大促期间的高并发压力，推荐采用分布式数据处理架构，确保系统稳定运行。\n- **数据可视化平台**：构建统一的数据看板，提升供应链各环节的可视化水平，辅助决策。\n\n### 5. **差异化优势说明**\n- 相较于恒通当前使用的竞品，TechFlow 的产品具备更强的定制化能力和集成能力，能够更好地适配电商平台的复杂业务场景。\n- 同时，TechFlow 在制造业和物流领域的成功案例（如蓝天电子、明远物流）也证明了其在供应链管理方面的专业实力。\n\n---\n\n### 结论\n目前没有明确证据表明恒通电子商务与 TechFlow Industrial Solutions 有过直接合作。但从行业背景、业务痛点以及 TechFlow 的产品能力来看，双方存在较大的合作潜力。我们建议进一步沟通，评估恒通电子商务的具体需求，并为其量身定制一套符合其业务目标的解决方案。",
+      "retrieved_docs": [
+        {
+          "id": "company_006_relations",
+          "title": "恒通电子商务 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_006_basic",
+          "title": "恒通电子商务 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_006_painpoints",
+          "title": "恒通电子商务 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "doc_10",
+          "title": "蓝天电子制造案例 - 质量追溯系统",
+          "type": "unknown"
+        },
+        {
+          "id": "company_003_project_0",
+          "title": "明远物流科技 合作案例（2022）",
+          "type": "project_history"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_005",
+        "category": "竞品客户识别",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.6666666666666666,
+          "covered_points": [
+            "恒通电子商务",
+            "竞品"
+          ],
+          "missing_points": [
+            "未合作"
+          ]
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            null,
+            "company_profile",
+            "company_relations",
+            "project_history",
+            "company_needs"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 1137
+      },
+      "timing": {
+        "retrieval_ms": 902.4940419999439,
+        "generation_ms": 7780.338749999828,
+        "total_ms": 8682.832791999772
+      },
+      "debug_info": {
+        "bm25_results": [
+          "19",
+          "18",
+          "20",
+          "2",
+          "23"
+        ],
+        "dense_results": [
+          "company_006_relations",
+          "company_006_basic",
+          "company_006_painpoints",
+          "company_008_project_0",
+          "company_001_project_0"
+        ],
+        "rrf_fused": [
+          "19",
+          "company_006_relations",
+          "18",
+          "company_006_basic",
+          "20",
+          "company_006_painpoints",
+          "2",
+          "company_008_project_0",
+          "23",
+          "company_001_project_0"
+        ],
+        "final_reranked": [
+          "company_006_relations",
+          "company_006_basic",
+          "company_006_painpoints",
+          "doc_10",
+          "company_003_project_0"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.552125000012893,
+          "dense_ms": 271.90458299992315,
+          "rrf_ms": 0.04212500016365084,
+          "candidate_fetch_ms": 0.044459000037022633,
+          "rerank_ms": 629.8751249998986,
+          "retrieval_total_ms": 902.4184170000353
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_006",
+      "category": "混合检索效果验证",
+      "query": "DataStream Pro 适合哪些行业？",
+      "answer": "DataStream Pro 是 TechFlow Industrial Solutions 推出的工业物联网平台，专为智能制造和工业自动化场景设计。其强大的数据采集、实时监控、AI分析与预测性维护能力，使其适用于多个行业领域。以下是 DataStream Pro 适合的主要行业及其适用场景：\n\n---\n\n### ✅ **1. 汽车制造行业**\n- **适用场景**：生产线设备监控、质量追溯、能耗管理、预测性维护。\n- **优势**：\n  - 支持多种工业协议（如 OPC UA、Modbus），兼容汽车生产线设备。\n  - AI 驱动的质量分析模型可有效降低产品不良率。\n  - 实时监控与报警系统有助于减少停机时间，提升生产效率。\n\n- **案例参考**：星辰汽车零部件厂通过部署 DataStream Pro 系列产品，实现了生产效率提升 42%，不良率从 18% 降至 6%。\n\n---\n\n### ✅ **2. 电子制造行业**\n- **适用场景**：SMT 线设备监控、PCB 质量检测、温湿度控制、能耗优化。\n- **优势**：\n  - 支持高精度传感器接入，实现对温度、振动等关键参数的实时监测。\n  - 数据分析模块可识别异常模式，提前预警潜在故障。\n  - 可集成 MES 系统，实现生产过程数字化管理。\n\n---\n\n### ✅ **3. 食品与制药行业**\n- **适用场景**：洁净车间环境监控、设备运行状态跟踪、批次追溯、合规性管理。\n- **优势**：\n  - 符合 FDA 21 CFR Part 11 标准，满足药品生产质量管理规范（GMP）要求。\n  - 全流程数据记录与追溯功能，确保产品可追溯性。\n  - 能耗管理模块有助于降低运营成本并符合环保标准。\n\n---\n\n### ✅ **4. 化工与能源行业**\n- **适用场景**：反应釜监控、管道压力/温度监测、设备健康度评估、能耗优化。\n- **优势**：\n  - 支持复杂工业协议，适应化工设备多样化的通信需求。\n  - 预测性维护模型可有效预防设备故障，保障生产安全。\n  - 能耗分析模块有助于优化能源使用，降低碳排放。\n\n---\n\n### ✅ **5. 重型机械与装备制造行业**\n- **适用场景**：大型设备运行状态监测、远程运维、故障诊断、生命周期管理。\n- **优势**：\n  - 支持大规模设备连接（最多 500 台设备），适合大型工厂部署。\n  - 边缘计算能力支持本地预处理，降低云端负载。\n  - 多级报警机制确保关键设备运行安全。\n\n---\n\n### ✅ **6. 物流与仓储行业**\n- **适用场景**：AGV 运行监控、仓库设备状态跟踪、库存可视化、能耗管理。\n- **优势**：\n  - 实时数据采集与可视化功能，提升物流调度效率。\n  - 能耗分析模块有助于优化仓储设备运行策略。\n  - 移动端 APP 支持，便于现场人员快速响应问题。\n\n---\n\n### 📌 **总结：DataStream Pro 的核心价值**\n- **多行业适配**：覆盖汽车、电子、食品、制药、化工、能源、机械、物流等多个行业。\n- **灵活部署**：支持公有云、私有云及混合云部署方式，满足不同企业的需求。\n- **高效智能**：结合 AI 分析与预测性维护，显著提升设备利用率与生产效率。\n- **数据驱动决策**：提供全面的数据可视化与分析工具，助力企业实现数字化转型。\n\n---\n\n如果您是恒通电子商务这样的电商平台，虽然目前使用的是竞品实时数据平台，但 DataStream Pro 在供应链可视化、库存管理、大促期间系统稳定性等方面具有明显优势，建议进一步沟通以了解是否适合您的业务场景。",
+      "retrieved_docs": [
+        {
+          "id": "company_006_painpoints",
+          "title": "恒通电子商务 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_001_project_0",
+          "title": "鼎盛科技有限公司 合作案例（2023）",
+          "type": "project_history"
+        },
+        {
+          "id": "doc_4",
+          "title": "FlowMind 工业物联网平台",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_12",
+          "title": "FlowControl-X550 定制版本（特殊订制）",
+          "type": "unknown"
+        },
+        {
+          "id": "doc_2",
+          "title": "生产效率提升案例 - 星辰汽车零部件厂",
+          "type": "unknown"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_006",
+        "category": "混合检索效果验证",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.6666666666666666,
+          "covered_points": [
+            "DataStream Pro",
+            "实时"
+          ],
+          "missing_points": [
+            "金融"
+          ]
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            null,
+            "company_needs",
+            "project_history"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 1553
+      },
+      "timing": {
+        "retrieval_ms": 916.9298340000296,
+        "generation_ms": 12869.474625000066,
+        "total_ms": 13786.404459000096
+      },
+      "debug_info": {
+        "bm25_results": [
+          "2",
+          "36",
+          "43",
+          "24",
+          "3"
+        ],
+        "dense_results": [
+          "doc_8",
+          "company_001_project_0",
+          "doc_4",
+          "doc_1",
+          "doc_12"
+        ],
+        "rrf_fused": [
+          "2",
+          "doc_8",
+          "36",
+          "company_001_project_0",
+          "43",
+          "doc_4",
+          "24",
+          "doc_1",
+          "3",
+          "doc_12"
+        ],
+        "final_reranked": [
+          "company_006_painpoints",
+          "company_001_project_0",
+          "doc_4",
+          "doc_12",
+          "doc_2"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.6485420001354214,
+          "dense_ms": 288.08166599992546,
+          "rrf_ms": 0.03979100006290537,
+          "candidate_fetch_ms": 0.04470800013223197,
+          "rerank_ms": 628.0281250001281,
+          "retrieval_total_ms": 916.8428320003841
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_007",
+      "category": "痛点匹配推荐",
+      "query": "云帆新能源有生产数据孤岛的问题，推荐什么方案？",
+      "answer": "根据云帆新能源的业务痛点和行业背景，其面临的主要问题之一是**生产数据孤岛**。为解决这一问题，TechFlow Industrial Solutions 推荐以下定制化解决方案：\n\n---\n\n### ✅ **推荐方案：TechFlow 智能制造数据集成平台（SmartData Hub）**\n\n#### 📌 方案概述：\nTechFlow 智能制造数据集成平台是一款专为制造业企业设计的工业物联网（IIoT）数据整合系统，能够打通设备层、MES、ERP、SCM 等多系统之间的数据壁垒，实现生产数据的实时采集、分析与可视化。\n\n#### 📌 核心功能：\n1. **多源数据集成**  \n   支持与云帆新能源现有的生产线设备、MES、ERP 系统进行无缝对接，打破数据孤岛，实现全厂级数据统一管理。\n\n2. **实时监控与预警**  \n   通过部署边缘计算节点，对生产线运行状态进行实时监控，并在异常发生前发出预警，降低停机风险。\n\n3. **数据可视化与报表**  \n   提供直观的数据仪表盘和定制化报表，帮助管理层快速掌握生产效率、设备利用率、能耗等关键指标。\n\n4. **质量追溯与工艺优化**  \n   结合生产数据与工艺参数，支持电池一致性分析和质量追溯，提升产品合格率与客户满意度。\n\n5. **AI驱动的预测性维护**  \n   利用机器学习算法对设备运行数据进行建模，预测潜在故障并提供维护建议，降低设备维护成本。\n\n---\n\n### 📌 为什么选择 TechFlow 智能制造数据集成平台？\n\n| 对比项 | TechFlow 智能制造数据集成平台 | 竞品方案（如某国外品牌） |\n|--------|-------------------------------|--------------------------|\n| 数据集成能力 | 支持多协议、多系统接入 | 部分方案兼容性有限 |\n| 实时性 | 边缘计算+云端同步，延迟低 | 依赖云端处理，延迟较高 |\n| 成本效益 | 定制化部署，按需付费 | 套件式收费，初期投入高 |\n| 技术支持 | 中文服务团队，本地化响应 | 国际团队，响应周期长 |\n| 行业经验 | 在新能源电池领域有多个成功案例 | 侧重传统制造业 |\n\n---\n\n### 📌 成功案例参考\n\n- **某头部动力电池企业**：通过部署 TechFlow 智能制造数据集成平台，实现了生产数据的全面打通，设备故障率下降 30%，库存周转率提升 25%。\n- **某储能系统制造商**：利用该平台实现生产数据与供应链系统的联动，订单交付准时率提高 40%。\n\n---\n\n### 📌 实施建议\n\n1. **需求调研阶段**：由 TechFlow 专业顾问团队深入云帆新能源的生产线，梳理现有系统架构与数据流。\n2. **定制化开发**：根据云帆新能源的具体需求，定制数据接口与分析模型。\n3. **试点部署**：优先在某一产线或车间进行试点，验证平台效果。\n4. **全面推广**：在试点成功的基础上，逐步扩展至全厂范围。\n\n---\n\n### 📌 总结\n\n针对云帆新能源的“生产数据孤岛”问题，TechFlow 智能制造数据集成平台是一个高效、灵活且具有前瞻性的解决方案。它不仅能够解决当前的数据整合难题，还能为云帆新能源未来的智能制造升级奠定坚实基础。\n\n如需进一步了解方案细节或安排现场调研，请随时联系我们的销售团队。",
+      "retrieved_docs": [
+        {
+          "id": "company_001_painpoints",
+          "title": "鼎盛科技有限公司 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_004_painpoints",
+          "title": "云帆新能源 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_009_painpoints",
+          "title": "智信半导体 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_004_basic",
+          "title": "云帆新能源 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_004_relations",
+          "title": "云帆新能源 企业关系",
+          "type": "company_relations"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_007",
+        "category": "痛点匹配推荐",
+        "passed": false,
+        "key_points_coverage": {
+          "recall_score": 0.6666666666666666,
+          "covered_points": [
+            "云帆新能源",
+            "数据孤岛"
+          ],
+          "missing_points": [
+            "FlowMind"
+          ]
+        },
+        "source_coverage": {
+          "passed": false,
+          "actual_sources": [
+            "company_profile",
+            "company_needs",
+            "company_relations"
+          ],
+          "missing_sources": [
+            "business_docs"
+          ]
+        },
+        "answer_length": 1439
+      },
+      "timing": {
+        "retrieval_ms": 1098.2557499999075,
+        "generation_ms": 10442.269415999817,
+        "total_ms": 11540.525165999725
+      },
+      "debug_info": {
+        "bm25_results": [
+          "11",
+          "12",
+          "13",
+          "51",
+          "3"
+        ],
+        "dense_results": [
+          "company_004_painpoints",
+          "company_004_basic",
+          "company_001_painpoints",
+          "company_004_relations",
+          "company_009_painpoints"
+        ],
+        "rrf_fused": [
+          "11",
+          "company_004_painpoints",
+          "12",
+          "company_004_basic",
+          "13",
+          "company_001_painpoints",
+          "51",
+          "company_004_relations",
+          "3",
+          "company_009_painpoints"
+        ],
+        "final_reranked": [
+          "company_001_painpoints",
+          "company_004_painpoints",
+          "company_009_painpoints",
+          "company_004_basic",
+          "company_004_relations"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.6826250000813161,
+          "dense_ms": 257.6229169999351,
+          "rrf_ms": 0.03720899985637516,
+          "candidate_fetch_ms": 0.04437500001586159,
+          "rerank_ms": 839.7902920000888,
+          "retrieval_total_ms": 1098.1774179999775
+        }
+      }
+    },
+    {
+      "test_id": "fusion_test_008",
+      "category": "多企业对比查询",
+      "query": "明远物流科技和晨曦食品加工都用过什么产品？",
+      "answer": "根据提供的知识库信息，**明远物流科技**和**晨曦食品加工**都使用过 **FlowControl-X100** 产品。\n\n### 具体情况如下：\n\n- **晨曦食品加工**  \n  - 使用产品：**FlowControl-X100**  \n  - 项目：食品安全追溯系统  \n  - 时间：2021年  \n  - 成果：追溯覆盖率100%，召回响应时间从3天缩短至2小时  \n\n- **明远物流科技**  \n  - 使用产品：**FlowControl-X100**  \n  - 项目：智慧仓储系统  \n  - 时间：2022年  \n  - 成果：仓储效率提升28%，拣货错误率降低45%  \n\n### 总结：\n两者均使用了 **TechFlow Industrial Solutions** 的 **FlowControl-X100** 产品，但应用的场景不同，分别针对食品制造行业的**食品安全追溯**和物流行业的**智慧仓储管理**。",
+      "retrieved_docs": [
+        {
+          "id": "company_008_basic",
+          "title": "晨曦食品加工 企业档案",
+          "type": "company_profile"
+        },
+        {
+          "id": "company_008_project_0",
+          "title": "晨曦食品加工 合作案例（2021）",
+          "type": "project_history"
+        },
+        {
+          "id": "company_008_painpoints",
+          "title": "晨曦食品加工 业务痛点",
+          "type": "company_needs"
+        },
+        {
+          "id": "company_008_relations",
+          "title": "晨曦食品加工 企业关系",
+          "type": "company_relations"
+        },
+        {
+          "id": "company_003_project_0",
+          "title": "明远物流科技 合作案例（2022）",
+          "type": "project_history"
+        }
+      ],
+      "evaluation": {
+        "test_id": "fusion_test_008",
+        "category": "多企业对比查询",
+        "passed": true,
+        "key_points_coverage": {
+          "recall_score": 1.0,
+          "covered_points": [
+            "明远物流科技",
+            "FlowControl-X100",
+            "晨曦食品加工"
+          ],
+          "missing_points": []
+        },
+        "source_coverage": {
+          "passed": true,
+          "actual_sources": [
+            "company_relations",
+            "company_profile",
+            "company_needs",
+            "project_history"
+          ],
+          "missing_sources": []
+        },
+        "answer_length": 423
+      },
+      "timing": {
+        "retrieval_ms": 1230.2779580002152,
+        "generation_ms": 4327.476709000166,
+        "total_ms": 5557.754667000381
+      },
+      "debug_info": {
+        "bm25_results": [
+          "25",
+          "26",
+          "27",
+          "28",
+          "8"
+        ],
+        "dense_results": [
+          "company_008_basic",
+          "company_008_relations",
+          "company_008_project_0",
+          "company_008_painpoints",
+          "company_003_painpoints"
+        ],
+        "rrf_fused": [
+          "25",
+          "company_008_basic",
+          "26",
+          "company_008_relations",
+          "27",
+          "company_008_project_0",
+          "28",
+          "company_008_painpoints",
+          "8",
+          "company_003_painpoints"
+        ],
+        "final_reranked": [
+          "company_008_basic",
+          "company_008_project_0",
+          "company_008_painpoints",
+          "company_008_relations",
+          "company_003_project_0"
+        ],
+        "overlap_bm25_dense": 0,
+        "latency": {
+          "bm25_ms": 0.857875000065178,
+          "dense_ms": 259.63387499996315,
+          "rrf_ms": 0.05320800005392812,
+          "candidate_fetch_ms": 0.07058299979689764,
+          "rerank_ms": 969.5733749999818,
+          "retrieval_total_ms": 1230.188915999861
+        }
+      }
+    }
+  ]
+}
